@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Create Game</title>
+</head>
+<body>
+    <h2>Create a Game</h2>
+    <form id="gameForm">
+        <label for="gameName">Game Name:</label><br>
+        <input type="text" id="gameName" name="gameName"><br>
+        <input type="submit" value="Create Game">
+    </form>
+
+    <script>
+        document.getElementById('gameForm').addEventListener('submit', function(e) {
+            e.preventDefault();
+            const gameName = document.getElementById('gameName').value;
+            const token = localStorage.getItem('access_token');
+
+            fetch('http://127.0.0.1:5000/game', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': 'Bearer ' + token
+                },
+                body: JSON.stringify({ name: gameName, status: 'ongoing' })
+            })
+            .then(response => response.json())
+            .then(data => {
+                console.log('Success:', data);
+                alert('Game Created Successfully!');
+            })
+            .catch((error) => {
+                console.error('Error:', error);
+            });
+        });
+    </script>
+</body>
+</html>

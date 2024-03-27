@@ -1,0 +1,812 @@
+<!DOCTYPE html>
+<html lang="de">
+
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Planspiel</title>
+    <script src="https://code.highcharts.com/highcharts.js"></script>
+    <script src="https://code.highcharts.com/modules/exporting.js"></script>
+    <script src="https://code.highcharts.com/modules/accessibility.js"></script>
+    <link rel="icon" href="https://upload.wikimedia.org/wikipedia/commons/thumb/2/24/LEGO_logo.svg/512px-LEGO_logo.svg.png" type="image/x-icon">
+
+</head>
+<style>
+    * {
+        box-sizing: border-box;
+        margin: 0;
+        padding: 0;
+    }
+
+    body {
+        font-family: "Roboto", sans-serif;
+        margin: 0;
+        padding: 0;
+        width: 100%;
+        height: 100%;
+    }
+
+    .container {
+        display: flex;
+        height: 100vh;
+        background-color: #2f3136;
+        padding-left: 5px;
+        padding-right: 5px;
+    }
+
+    .box {
+        color: #ffffff;
+        display: flex;
+        align-items: flex-start;
+        flex: 1;
+    }
+
+    .box:first-child {
+        justify-content: center;
+        flex: 0 0 15%;
+        background-color: #292b2f;
+    }
+
+    .box:nth-child(2) {
+        flex: 0 0 75%;
+        background-color: #2f3136;
+    }
+
+    .box:last-child {
+        flex: 0 0 10%;
+        background-color: #292b2f;
+    }
+
+    .box.user-list {
+        display: flex;
+        flex-direction: column;
+        overflow-y: auto;
+        padding: 20px;
+        border-radius: 8px;
+        margin: 0 5px;
+    }
+
+    .group {
+        margin-bottom: 20px;
+    }
+
+    .group h3 {
+        color: #b9bbbe;
+        font-size: 16px;
+        margin-bottom: 10px;
+        font-weight: 700;
+    }
+
+    .user {
+        display: flex;
+        align-items: center;
+        margin-top: 10px;
+        transition: background-color 0.3s ease;
+    }
+
+    .user:hover {
+        background-color: #4e5d6c;
+    }
+
+    .user img {
+        width: 40px;
+        height: 40px;
+        border-radius: 50%;
+        margin-right: 10px;
+        object-fit: cover;
+    }
+
+    .user span {
+        font-weight: 400;
+        font-size: 14px;
+        color: #ffffff;
+    }
+
+    .user.online img {
+        border: 2px solid #43b581;
+    }
+
+    .user.ofline img {
+        border: 2px solid #161616;
+    }
+
+    .user-list::-webkit-scrollbar {
+        width: 6px;
+    }
+
+    .user-list::-webkit-scrollbar-thumb {
+        background: #202225;
+        border-radius: 4px;
+    }
+
+    .user-list::-webkit-scrollbar-track {
+        background: #2f3136;
+    }
+
+    .box button {
+        padding: 10px 20px;
+        margin: 5px;
+        border: none;
+        border-radius: 4px;
+        cursor: pointer;
+        transition: background-color 0.3s ease;
+    }
+
+    .box button:hover {
+        background-color: #4e5d6c;
+    }
+
+
+    .menu ul {
+        list-style-type: none;
+        padding: 0;
+    }
+
+    .menu button {
+        display: flex;
+        align-items: center;
+        width: 100%;
+        padding: 10px 100px;
+        margin: 5px 0;
+        border: none;
+        background-color: #2f3136;
+        color: white;
+        text-align: left;
+        cursor: pointer;
+        transition: background-color 0.3s ease;
+    }
+
+    .menu img {
+        width: 40px;
+        height: 40px;
+        border-radius: 50%;
+        margin-right: 10px;
+        object-fit: cover;
+    }
+
+    .menu button:hover {
+        background-color: #3e4045;
+    }
+
+    #contentBox {
+        padding: 20px;
+        background-color: #36393F;
+        color: #FFFFFF;
+        border-radius: 8px;
+        overflow-y: auto;
+        display: flex;
+        flex-direction: column;
+    }
+
+    #contentBox h2 {
+        color: #FFFFFF;
+        font-size: 1.5em;
+        margin-bottom: 16px;
+        padding-bottom: 4px;
+        border-bottom: 2px solid #64707D;
+    }
+
+    #contentBox p {
+        margin-bottom: 10px;
+        line-height: 1.6;
+        font-size: 1em;
+    }
+
+    .highlight {
+        background-color: #2C2F33;
+        border-left: 4px solid #7289DA;
+        padding: 15px;
+        margin-bottom: 20px;
+        border-radius: 4px;
+    }
+
+    .highlight p {
+        margin: 0;
+    }
+
+    span.key-info {
+        font-weight: bold;
+        color: #00B0F4;
+    }
+
+    .menu button.active {
+        background-color: #000000;
+    }
+
+
+    .phase-container {
+        background-color: #40444B;
+        color: #FFFFFF;
+        border-radius: 8px;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        padding: 20px;
+        margin: 0px auto;
+        box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+    }
+
+    .highcharts-figure {
+        width: 1000px;
+        margin: 0 auto;
+    }
+
+    #container {
+        width: 100%;
+        height: 400px;
+    }
+
+    .popup-background {
+        display: none;
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background-color: rgba(0, 0, 0, 0.5);
+        z-index: 2;
+        justify-content: center;
+        align-items: center;
+    }
+
+    .popup {
+        background: #2f3136;
+        padding: 20px;
+        border-radius: 5px;
+        text-align: center;
+        width: 300px;
+    }
+
+    .popup img {
+        width: 100px;
+        height: 100px;
+        border-radius: 50%;
+        object-fit: cover;
+    }
+
+    .popup h3 {
+        color: #fff;
+        margin-top: 10px;
+    }
+
+    .popup button {
+        display: block;
+        background-color: #7289DA;
+        color: #fff;
+        border: none;
+        border-radius: 4px;
+        padding: 10px 20px;
+        margin-top: 10px;
+        cursor: pointer;
+        font-size: 1em;
+        margin: 20px auto 0;
+    }
+
+    .popup button:hover {
+        background-color: #677bc4;
+    }
+
+    .highlight2 {
+    background-color: #2C2F33;
+    border-left: 4px solid #72dacc;
+    padding: 15px;
+    margin-bottom: 20px;
+    border-radius: 4px;
+    font-size: 1em;
+    color: #ffffff;
+}
+
+.highlight2 select, .highlight2 input[type="number"] {
+    width: 100%;
+    padding: 8px;
+    font-size: 1em;
+    border: 1px solid #72dacc;
+    background-color: #36393F;
+    color: #ffffff;
+    margin: 8px 0;
+    border-radius: 4px;
+}
+
+.highlight2 button {
+    padding: 10px 20px;
+    font-size: 1em;
+    margin-top: 10px;
+    background-color: #72dacc;
+    color: #2C2F33;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    display: block; 
+    width: auto; 
+    margin: 10px auto; 
+}
+
+.highlight2 button:hover {
+    background-color: #66c0b2; 
+}
+
+.highlight2 label {
+    display: block; 
+    margin-bottom: 5px; 
+    color: #cccccc; 
+}
+
+.highlight2 div {
+    margin-bottom: 15px; 
+}
+
+</style>
+
+<body>
+    <div class="container">
+        <div class="box menu">
+            <ul>
+                <li>
+                    <button id="homeBtn">
+                        <img src="https://logowik.com/content/uploads/images/795_home.jpg" alt="" />
+                        Home
+                    </button>
+                </li>
+                <li>
+                    <button id="eingabeBtn" style="color: #ffffff">
+                        <img src="https://static.vecteezy.com/ti/gratis-vektor/p1/13661340-eingabe-pin-code-auf-tastatur-silhouette-symbol-hand-geben-sie-das-passwort-auf-dem-glyphen-piktogramm-der-wahltastatur-ein-schlusselnummer-der-sicherheitsbank-auf-dem-fingerdruckknopf-des-geldautomaten-geheime-kombination-isolierteillustration-vektor.jpg"
+                            alt="" />
+                        Eingabe
+                    </button>
+
+                </li>
+                <li>
+                    <button id="cardinalsBtn" style="color: #dd2100">
+                        <img src="https://logo-marque.com/wp-content/uploads/2020/11/Arizona-Cardinals-Logo.png"
+                            alt="" />
+                        Arizona Cardinals
+                    </button>
+                </li>
+                <li>
+                    <button id="chiefsBtn" style="color: #e9bf07">
+                        <img src="https://logo-marque.com/wp-content/uploads/2020/11/Kansas-City-Chiefs-logo.png"
+                            alt="" />
+                        The Chiefs
+                    </button>
+                </li>
+                <li>
+                    <button id="lionsBtn" style="color: #005A8B">
+                        <img src="https://logo-marque.com/wp-content/uploads/2020/11/Detroit-Lions-logo.png"
+                            alt="" />
+                            Detroit Lions
+                    </button>
+                </li>
+            </ul>
+        </div>
+        <div class="box" id="contentBox">Inhalt wird hier angezeigt</div>
+
+        <div class="box user-list">
+            <div class="group">
+                <h3 style="color: #dd2100">GROUP 1 - Arizona Cardinals</h3>
+                <div class="user online">
+                    <img src="https://upload.wikimedia.org/wikipedia/commons/7/73/Kyler_Murray_in_huddle_%2850369475187%29_%28cropped%29.jpg"
+                        alt="CM Justice" />
+                    <span>Kyler Murray</span>
+                </div>
+                <div class="user online">
+                    <img src="https://a.espncdn.com/combiner/i?img=/i/headshots/nfl/players/full/4360175.png&w=350&h=254"
+                        alt="CM Kiwii" />
+                    <span>Clayton Tune</span>
+                </div>
+                <div class="user ofline">
+                    <img src="https://a.espncdn.com/combiner/i?img=/i/headshots/nfl/players/full/3045147.png&w=350&h=254"
+                        alt="CM Kiwii" />
+                    <span>James Conner</span>
+                </div>
+                <div class="user ofline">
+                    <img src="https://a.espncdn.com/combiner/i?img=/i/headshots/nfl/players/full/4362478.png&w=350&h=254"
+                        alt="CM Kiwii" />
+                    <span>Emari Demercado</span>
+                </div>
+                <div class="user ofline">
+                    <img src="https://a.espncdn.com/combiner/i?img=/i/headshots/nfl/players/full/4372485.png"
+                        alt="CM Kiwii" />
+                    <span>Rondale Moore</span>
+                </div>
+            </div>
+            <div class="group">
+                <h3 style="color: #e9bf07">GROUP 2 - The Chiefs</h3>
+                <div class="user online">
+                    <img src="https://hips.hearstapps.com/hmg-prod/images/patrick-mahomes-of-the-kansas-city-chiefs-yells-during-a-news-photo-1707495208.jpg?crop=1xw:0.84334xh;center,top"
+                        alt="Embark | Abstract" />
+                    <span>Patrick Mahomes</span>
+                </div>
+                <div class="user ofline">
+                    <img src="https://helios-i.mashable.com/imagery/articles/05ELQYgw7RSyP2mlYhFy91e/hero-image.fill.size_1248x702.v1707708413.jpg"
+                        alt="Embark | Abstract" />
+                    <span>Travis Kelce	</span>
+                </div>
+                <div class="user ofline">
+                    <img src="https://b.fssta.com/uploads/application/nfl/headshots/22747.png"
+                        alt="Embark | Abstract" />
+                    <span>Trent McDuffie</span>
+                </div>
+                <div class="user ofline">
+                    <img src="https://gray-knop-prod.cdn.arcpublishing.com/resizer/v2/VPTWKS2C2BJLZGHDDFYPCOKAMQ.jpg?auth=42f6ebe3b97b598858c70cbdf98e3fa37e9cdb687d8858c40abef53061a8cc6b&width=800&height=450&smart=true"
+                        alt="Embark | Abstract" />
+                    <span>Jerick McKinnon</span>
+                </div>
+            </div>
+            <div class="group">
+                <h3 style="color: #005A8B">GROUP 3 - Detroit Lions</h3>
+                <div class="user online">
+                    <img src="data:image/jpeg;base64,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"
+                        alt="Embark | Abstract" />
+                    <span>Frank Ragnow</span>
+                </div>
+                <div class="user online">
+                    <img src="https://pbs.twimg.com/profile_images/1674264986313699328/s3Lbuh8x_400x400.jpg"
+                        alt="Embark | Abstract" />
+                    <span>Khalil Dorsey</span>
+                </div>
+                <div class="user online">
+                    <img src="https://a.espncdn.com/combiner/i?img=/i/headshots/nfl/players/full/4374338.png"
+                        alt="Embark | Abstract" />
+                    <span>Steven Gilmore</span>
+                </div>
+            </div>
+        </div>
+    </div>
+</body>
+
+<script>
+
+    const homeContent = `
+        <div class="phase-container">
+            <h1>Phase I</h1>
+            <p>
+            <figure class="highcharts-figure">
+                <div id="container"></div>
+            </figure>
+            <p><p><p><p><p><p><p><p><p>
+            <figure class="highcharts-figure">
+                <div id="container2"></div>
+            </figure>
+        </div>
+    `;
+
+    const cardinalsContent = `
+  <h2>Arizona Cardinals - Phase I</h2>
+  <div class="highlight">
+    <p>Gespielte Spiele: <span class="key-info">16</span></p>
+    <p>Gewonnene Spiele: <span class="key-info">9</span></p>
+    <p>Verlorene Spiele: <span class="key-info">7</span></p>
+    <p>Punkteverhältnis: <span class="key-info">345:310</span></p>
+  </div>
+  <div class="highlight">
+    <p>Top-Scorer: <span class="key-info">Kyler Murray</span></p>
+  </div>
+  <div class="highlight">
+    <p>Wichtige Verletzungen: <span class="key-info">Keine</span></p>
+  </div>
+  <div class="highlight">
+    <p>Saison-Highlights: <span class="key-info">Erreichen der Playoffs, Sieg gegen Top-Gegner</span></p>
+  </div>
+`;
+
+
+    const chiefsContent = `
+  <h2>The Chiefs - Phase I</h2>
+  <div class="highlight">
+    <p>Gespielte Spiele: <span class="key-info">16</span></p>
+    <p>Gewonnene Spiele: <span class="key-info">12</span></p>
+    <p>Verlorene Spiele: <span class="key-info">4</span></p>
+    <p>Punkteverhältnis: <span class="key-info">402:278</span></p>
+  </div>
+  <div class="highlight">
+    <p>Top-Scorer: <span class="key-info">Patrick Mahomes</span></p>
+  </div>
+  <div class="highlight">
+    <p>Wichtige Verletzungen: <span class="key-info">Wide Receiver für 5 Spiele ausgefallen</span></p>
+  </div>
+  <div class="highlight">
+    <p>Saison-Highlights: <span class="key-info">Beste Offensive der Liga, MVP-Auszeichnung für Mahomes</span></p>
+  </div>
+`;
+
+const lionsContent = `
+<h2>Detroit Lions - Phase I</h2>
+<div class="highlight">
+  <p>Gespielte Spiele: <span class="key-info">16</span></p>
+  <p>Gewonnene Spiele: <span class="key-info">8</span></p>
+  <p>Verlorene Spiele: <span class="key-info">8</span></p>
+  <p>Punkteverhältnis: <span class="key-info">320:340</span></p>
+</div>
+<div class="highlight">
+  <p>Top-Scorer: <span class="key-info">Jared Goff</span></p>
+</div>
+<div class="highlight">
+  <p>Wichtige Verletzungen: <span class="key-info">Running Back für 6 Spiele ausgefallen</span></p>
+</div>
+<div class="highlight">
+  <p>Saison-Highlights: <span class="key-info">Spannende Spiele, verbesserte Defensive</span></p>
+</div>
+`;
+
+const eingabeContent = `
+<h2>Dozentensteuerung - Phase I</h2>
+  <form id="dozentControlForm">
+    <div class="highlight2">
+      <button type="button" id="startNextRoundBtn">Nächste Runde starten</button>
+    </div>
+    <h3>Events auslösen:</h3>
+    <div class="highlight2">
+      <div>
+        <label for="economicEvent">Wirtschaftliches Ereignis:</label>
+        <select id="economicEvent">
+          <option value="none">Kein Ereignis</option>
+          <option value="boom">Wirtschaftsboom</option>
+          <option value="recession">Rezession</option>
+          <option value="inflation">Inflation</option>
+        </select>
+      </div>
+      <div>
+        <label for="naturalEvent">Naturereignis:</label>
+        <select id="naturalEvent">
+          <option value="none">Kein Ereignis</option>
+          <option value="earthquake">Erdbeben</option>
+          <option value="storm">Sturm</option>
+          <option value="drought">Dürre</option>
+        </select>
+      </div>
+      <div>
+        <label for="politicalEvent">Politische Ereignisse:</label>
+        <select id="politicalEvent">
+          <option value="none">Kein Ereignis</option>
+          <option value="elections">Wahlen</option>
+          <option value="scandal">Skandal</option>
+          <option value="lawChange">Gesetzesänderung</option>
+        </select>
+      </div>
+      <button type="button" id="triggerEventBtn">Event auslösen</button>
+    </div>
+    <h3>Spieler beeinflussen:</h3>
+    <div class="highlight2">
+      <div>
+        <label for="playerAdjustment">Spieleranpassung:</label>
+        <select id="playerAdjustment">
+          <option value="none">Keine Anpassung</option>
+          <option value="bonus">Bonus gewähren</option>
+          <option value="penalty">Strafe verhängen</option>
+        </select>
+      </div>
+      <button type="button" id="adjustPlayerBtn">Anpassung vornehmen</button>
+    </div>
+  </form>
+`;
+
+
+    function initHighchartsChart() {
+        Highcharts.chart('container', {
+            credits: {
+                enabled: false
+            },
+            chart: {
+                type: 'pie',
+                backgroundColor: '#40444B'
+            },
+            title: {
+                text: 'Marktmacht',
+                style: {
+                    color: '#ffffff'
+                }
+            },
+            tooltip: {
+                valueSuffix: '%',
+                backgroundColor: '#ffffff',
+                style: {
+                    color: '#000000'
+                }
+            },
+            plotOptions: {
+                series: {
+                    allowPointSelect: true,
+                    cursor: 'pointer',
+                    dataLabels: [{
+                        enabled: true,
+                        distance: 20,
+                        style: {
+                            color: '#ffffff'
+                        }
+                    }, {
+                        enabled: true,
+                        distance: -40,
+                        format: '{point.percentage:.1f}%',
+                        style: {
+                            fontSize: '1.2em',
+                            textOutline: 'none',
+                            opacity: 0.7,
+                            color: '#ffffff'
+                        },
+                        filter: {
+                            operator: '>',
+                            property: 'percentage',
+                            value: 10
+                        }
+                    }]
+                }
+            },
+            exporting: {
+                enabled: false,
+            },
+            series: [{
+                name: 'Percentage',
+                colorByPoint: true,
+                data: [{
+                    name: 'Arizona Cardinals',
+                    y: 55.02,
+                    color: '#dd2100'
+                },{
+                    name: 'Detroit Lions',
+                    y: 10,
+                    color: '#005A8B'
+                },{
+                    name: 'The Chiefs',
+                    y: 34.98,
+                    color: '#e9bf07'
+                }]
+            }]
+        });
+
+    }
+
+    function initSecondChart() {
+        Highcharts.chart('container2', {
+            chart: {
+                type: 'column',
+                backgroundColor: '#40444B'
+            },
+            title: {
+                text: ' ',
+                style: {
+                    color: '#ffffff'
+                }
+            },
+            xAxis: {
+                categories: ['The Cardinals', 'The Chiefs', 'Detroit Lions'],
+                labels: {
+                    style: {
+                        color: '#ffffff'
+                    }
+                }
+            },
+            yAxis: {
+                title: {
+                    text: ' ',
+                    style: {
+                        color: '#ffffff'
+                    }
+                },
+                labels: {
+                    style: {
+                        color: '#ffffff'
+                    }
+                }
+            },
+            credits: {
+                enabled: false
+            },
+            exporting: {
+                enabled: false,
+            },
+            plotOptions: {
+                column: {
+                    borderRadius: '25%'
+                }
+            },
+            legend: {
+                itemStyle: {
+                    color: '#ffffff'
+                }
+            },
+            series: [{
+                name: 'Einnahmen',
+                data: [500000, 200000, 600000],
+                color: '#76B041'
+            }, {
+                name: 'Ausgaben',
+                data: [-300000, -50000, -800000],
+                color: '#E74C3C'
+            }]
+        });
+    }
+    document.addEventListener('DOMContentLoaded', (event) => {
+        setContentAndInitCharts(); 
+        setActiveButton('homeBtn');
+    });
+
+    function setActiveButton(buttonId) {
+        removeActiveClasses();
+        document.getElementById(buttonId).classList.add('active');
+    }
+
+    function setContentAndInitCharts() {
+        document.getElementById('contentBox').innerHTML = homeContent;
+        initHighchartsChart();
+        setTimeout(initSecondChart, 0);
+    }
+
+    document.getElementById('homeBtn').addEventListener('click', function () {
+        removeActiveClasses();
+        this.classList.add('active');
+        setContentAndInitCharts(); 
+        setActiveButton('homeBtn');
+    });
+
+    function removeActiveClasses() {
+        document.querySelectorAll('.menu button').forEach(button => {
+            button.classList.remove('active');
+        });
+    }
+
+    document.getElementById('cardinalsBtn').addEventListener('click', function () {
+        removeActiveClasses();
+        this.classList.add('active');
+        document.getElementById('contentBox').innerHTML = cardinalsContent;
+    });
+
+    document.getElementById('chiefsBtn').addEventListener('click', function () {
+        removeActiveClasses();
+        this.classList.add('active');
+        document.getElementById('contentBox').innerHTML = chiefsContent;
+    });
+
+    document.getElementById('lionsBtn').addEventListener('click', function () {
+        removeActiveClasses();
+        this.classList.add('active');
+        document.getElementById('contentBox').innerHTML = lionsContent;
+    });
+
+    document.getElementById('eingabeBtn').addEventListener('click', function () {
+        removeActiveClasses();
+        this.classList.add('active');
+        document.getElementById('contentBox').innerHTML = eingabeContent;
+    });
+
+    function showPlayerPopup(name, imgSrc, isOnline, team) {
+    const popupBackground = document.createElement('div');
+    popupBackground.classList.add('popup-background');
+    const popup = document.createElement('div');
+    popup.classList.add('popup');
+
+    const teamColors = {
+        'Arizona Cardinals': '#dd2100',
+        'Detroit Lions': '#005A8B', 
+        'default': '#e9bf07'
+    };
+
+    const teamColor = teamColors[team] || teamColors['default'];
+
+    popup.innerHTML = `
+        <img src="${imgSrc}" alt="${name}" style="border: 3px solid ${isOnline ? '#43b581' : '#161616'};" />
+        <h3>${name}</h3>
+        <p>Team: <span style="color:${teamColor};">${team}</span></p>
+        <button onclick="this.parentElement.parentElement.style.display='none'">Schließen</button>
+    `;
+    popupBackground.appendChild(popup);
+    document.body.appendChild(popupBackground);
+    popupBackground.style.display = 'flex';
+}
+
+document.querySelectorAll('.group').forEach(group => {
+    const teamName = group.querySelector('h3').innerText.split(' - ')[1];
+
+    group.querySelectorAll('.user').forEach(user => {
+        user.addEventListener('click', function () {
+            const name = this.querySelector('span').innerText;
+            const imgSrc = this.querySelector('img').src;
+            const isOnline = this.classList.contains('online');
+            showPlayerPopup(name, imgSrc, isOnline, teamName);
+        });
+    });
+});
+
+</script>
+
+</html>

@@ -1,0 +1,362 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Game Master Dashboard</title>
+    <!-- Add Select2 CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/select2/dist/css/select2.min.css" rel="stylesheet" />
+    <style>
+        /* Optional: Additional custom styles */
+        .select2-container {
+            width: 100% !important;
+        }
+
+        /* Table Styles */
+        #gamesTable {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        #gamesTable th, #gamesTable td {
+            border: 1px solid black; /* Vertical lines */
+            padding: 8px; /* Padding for cell content */
+            text-align: left;
+        }
+
+        #gamesTable thead {
+            border-bottom: 2px solid black; /* Horizontal line under the header */
+        }
+
+        #teamsTable {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        #teamsTable th, #teamsTable td {
+            border: 1px solid black; /* Vertical lines */
+            padding: 8px; /* Padding for cell content */
+            text-align: left;
+        }
+
+        #teamsTable thead {
+            border-bottom: 2px solid black; /* Horizontal line under the header */
+        }
+    </style>
+</head>
+<body>
+    <h2>Game Master Dashboard</h2>
+
+    <!-- Register New Team Form -->
+    <button id="registerTeamBtn">Register New Team</button>
+    <div id="registerTeamForm" style="display:none;">
+        <h3>Register New Team</h3>
+        <form id="newTeamForm">
+            <label for="newTeamName">Team Name:</label><br>
+            <input type="text" id="newTeamName" name="newTeamName"><br>
+            <label for="newTeamPassword">Password:</label><br>
+            <input type="password" id="newTeamPassword" name="newTeamPassword"><br><br>
+            <input type="submit" value="Register Team">
+        </form>
+    </div>
+
+    <!-- Register New Game Form -->
+    <button id="registerGameBtn">Register New Game</button>
+    <div id="registerGameForm" style="display:none;">
+        <h3>Register New Game</h3>
+        <form id="newGameForm">
+            <label for="newGameName">Game Name:</label><br>
+            <input type="text" id="newGameName" name="newGameName"><br>
+            <label for="newGameTeams">Select Teams:</label><br>
+            <select multiple id="newGameTeams" style="width: 200px;">
+                <!-- Teams will be populated here -->
+            </select><br><br>
+            <input type="submit" value="Register Game">
+        </form>
+    </div>
+
+    <!-- List of Active Games -->
+    <h3>Active Games:</h3>
+    <table id="gamesTable">
+        <thead>
+            <tr>
+                <th>Game Name</th>
+                <th>Status</th>
+                <th>Teams</th>
+                <th></th>
+            </tr>
+        </thead>
+        <tbody>
+            <!-- Games will be populated here -->
+        </tbody>
+    </table>
+
+    <h3>Teams:</h3>
+    <table id="teamsTable">
+        <thead>
+            <tr>
+                <th>Team Name</th>
+                <th>Games</th>
+                <th></th> <!-- Empty header for delete buttons -->
+            </tr>
+        </thead>
+        <tbody>
+            <!-- Teams will be populated here -->
+        </tbody>
+    </table>
+
+    <!-- Logout Button -->
+    <button id="logoutBtn">Logout</button>
+
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/select2/dist/js/select2.min.js"></script>
+    <script>
+        // Function to Toggle Display of Forms
+        function toggleDisplay(elementId) {
+            var element = document.getElementById(elementId);
+            element.style.display = element.style.display === 'none' ? 'block' : 'none';
+        }
+
+        // Event Listener for Register Team Button
+        document.getElementById('registerTeamBtn').addEventListener('click', function() {
+            toggleDisplay('registerTeamForm');
+        });
+
+        // Event Listener for Register Game Button
+        document.getElementById('registerGameBtn').addEventListener('click', function() {
+            toggleDisplay('registerGameForm');
+            fetchTeams(); // Fetch teams when opening the game registration form
+        });
+
+        // Initialize Select2 on multi-select
+        $(document).ready(function() {
+            $('#newGameTeams').select2();
+        });
+
+        // Handle New Team Registration Submission
+        document.getElementById('newTeamForm').addEventListener('submit', function(e) {
+            e.preventDefault();
+            const teamName = document.getElementById('newTeamName').value;
+            const teamPassword = document.getElementById('newTeamPassword').value;
+            const token = localStorage.getItem('access_token');
+
+            fetch('http://127.0.0.1:5000/gamemaster/register_team', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': 'Bearer ' + token
+                },
+                body: JSON.stringify({ name: teamName, password: teamPassword })
+            })
+            .then(response => {
+                if (response.ok) {
+                    alert('Team Registered Successfully!');
+                    location.reload(); // Reload the page
+                } else {
+                    alert('Failed to register the team');
+                }
+            })
+            .catch((error) => {
+                console.error('Error:', error);
+                alert('Error registering the team');
+            });
+        });
+
+        // Fetch and populate teams for game registration
+        function fetchTeams() {
+            const teamSelect = document.getElementById('newGameTeams');
+            teamSelect.innerHTML = ''; // Clear existing options
+            const token = localStorage.getItem('access_token');
+            fetch('http://127.0.0.1:5000/teams', {
+                method: 'GET',
+                headers: {
+                    'Authorization': 'Bearer ' + token
+                }
+            })
+
+            .then(response => response.json())
+            .then(data => {
+                data.forEach(team => {
+                    let option = document.createElement('option');
+                    option.value = team.id;
+                    option.textContent = team.name;
+                    teamSelect.appendChild(option);
+                });
+            })
+            .catch(error => console.error('Error:', error));
+        }
+
+        // Handle New Game Registration Submission
+        document.getElementById('newGameForm').addEventListener('submit', function(e) {
+            e.preventDefault();
+            const gameName = document.getElementById('newGameName').value;
+            const selectedTeams = Array.from(document.getElementById('newGameTeams').selectedOptions).map(option => option.value);
+            const token = localStorage.getItem('access_token');
+
+            fetch('http://127.0.0.1:5000/gamemaster/register_game', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': 'Bearer ' + token
+                },
+                body: JSON.stringify({ name: gameName, team_ids: selectedTeams, status: 'active' })
+            })
+            .then(response => {
+                if (response.ok) {
+                    alert('Game Registered Successfully!');
+                    location.reload(); // Reload the page
+                } else {
+                    alert('Failed to register the game');
+                }
+            })
+            .catch((error) => {
+                console.error('Error:', error);
+                alert('Error registering the game');
+            });
+        });
+
+
+        // Function to add a row to the games table
+        function addGameRow(game) {
+            const gamesTableBody = document.getElementById('gamesTable').getElementsByTagName('tbody')[0];
+            let row = gamesTableBody.insertRow();
+            let cellName = row.insertCell(0);
+            let cellStatus = row.insertCell(1);
+            let cellTeams = row.insertCell(2);
+            let cellDelete = row.insertCell(3);
+
+            row.setAttribute('data-game-id', game.id);
+
+            cellName.textContent = game.name;
+            cellStatus.textContent = game.status;
+            cellTeams.textContent = game.teams.map(team => team.name).join(', ');
+
+            // Delete Button
+            let deleteBtn = document.createElement('button');
+            deleteBtn.textContent = 'Delete';
+            deleteBtn.onclick = function() { deleteGame(game.id); };
+            cellDelete.appendChild(deleteBtn);
+        }
+
+        // Function to handle game deletion
+        function deleteGame(gameId) {
+            if (!confirm('Are you sure you want to delete this game?')) {
+                return; // Stop if user cancels
+            }
+
+            const token = localStorage.getItem('access_token');
+            fetch(`http://127.0.0.1:5000/game/${gameId}`, {
+                method: 'DELETE',
+                headers: {
+                    'Authorization': 'Bearer ' + token
+                }
+            })
+            .then(response => {
+                if (response.ok) {
+                    alert('Game deleted successfully');
+                    location.reload(); // Reload the page
+                } else {
+                    alert('Failed to delete the game');
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                alert('Error deleting the game');
+            });
+        }
+
+        // Remove the game row from the table
+        function removeGameRow(gameId) {
+            let gamesTableBody = document.getElementById('gamesTable').getElementsByTagName('tbody')[0];
+            for (let row of gamesTableBody.rows) {
+                if (row.getAttribute('data-game-id') == gameId) {
+                    gamesTableBody.deleteRow(row.rowIndex);
+                    break;
+                }
+            }
+        }
+
+        function fetchTeamsAndPopulate() {
+            const token = localStorage.getItem('access_token');
+            fetch('http://127.0.0.1:5000/teams', {
+                method: 'GET',
+                headers: {
+                    'Authorization': 'Bearer ' + token
+                }
+            })
+            .then(response => response.json())
+            .then(teamsData => {
+                teamsData.forEach(team => addTeamRow(team));
+            })
+            .catch(error => console.error('Error:', error));
+        }
+
+        function addTeamRow(team) {
+            const teamsTableBody = document.getElementById('teamsTable').getElementsByTagName('tbody')[0];
+            let row = teamsTableBody.insertRow();
+            let cellName = row.insertCell(0);
+            let cellGames = row.insertCell(1);
+            let cellDelete = row.insertCell(2);
+
+            cellName.textContent = team.name;
+            cellGames.textContent = team.games.map(game => game.name).join(', '); // Assuming each team has a 'games' array
+
+            // Delete Button for Team
+            let deleteBtn = document.createElement('button');
+            deleteBtn.textContent = 'Delete';
+            deleteBtn.onclick = function() { deleteTeam(team.id); };
+            cellDelete.appendChild(deleteBtn);
+        }
+
+        function deleteTeam(teamId) {
+            if (!confirm('Are you sure you want to delete this team?')) {
+                return;
+            }
+
+            const token = localStorage.getItem('access_token');
+            fetch(`http://127.0.0.1:5000/teams/${teamId}`, {
+                method: 'DELETE',
+                headers: {
+                    'Authorization': 'Bearer ' + token
+                }
+            })
+            .then(response => {
+                if (response.ok) {
+                    alert('Team deleted successfully');
+                    location.reload(); // Reload the page to update the team list
+                } else {
+                    alert('Failed to delete the team');
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                alert('Error deleting the team');
+            });
+        }
+
+        // Fetch and display games on page load
+        document.addEventListener('DOMContentLoaded', function() {
+            const token = localStorage.getItem('access_token');
+            fetch('http://127.0.0.1:5000/games', {
+                method: 'GET',
+                headers: {
+                    'Authorization': 'Bearer ' + token
+                }
+            })
+            .then(response => response.json())
+            .then(gamesData => {
+                gamesData.forEach(game => addGameRow(game));
+            })
+            .catch(error => console.error('Error:', error));
+            fetchTeamsAndPopulate();
+        });
+
+        // Logout functionality
+        document.getElementById('logoutBtn').addEventListener('click', function() {
+            localStorage.removeItem('access_token');
+            window.location.href = 'login.html'; // Update with your login page URL
+        });
+
+    </script>
+</body>
+</html>
