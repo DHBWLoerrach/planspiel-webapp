@@ -28,7 +28,7 @@ CREATE TABLE IF NOT EXISTS `gamesimulationdb`.`games` (
   `name` VARCHAR(100) NOT NULL,
   `status` VARCHAR(100) NOT NULL,
   PRIMARY KEY (`id`),
-  UNIQUE INDEX `name` (`name` ASC) VISIBLE)
+  UNIQUE INDEX `name` (`name` ASC))
 ENGINE = InnoDB
 AUTO_INCREMENT = 9
 DEFAULT CHARACTER SET = utf8mb4;
@@ -42,7 +42,7 @@ CREATE TABLE IF NOT EXISTS `gamesimulationdb`.`teams` (
   `name` VARCHAR(100) NOT NULL,
   `password` VARCHAR(100) NOT NULL,
   PRIMARY KEY (`id`),
-  UNIQUE INDEX `name` (`name` ASC) VISIBLE)
+  UNIQUE INDEX `name` (`name` ASC))
 ENGINE = InnoDB
 AUTO_INCREMENT = 7
 DEFAULT CHARACTER SET = utf8mb4;
@@ -55,7 +55,7 @@ CREATE TABLE IF NOT EXISTS `gamesimulationdb`.`gameteams` (
   `game_id` INT(11) NOT NULL,
   `team_id` INT(11) NOT NULL,
   PRIMARY KEY (`game_id`, `team_id`),
-  INDEX `team_id` (`team_id` ASC) VISIBLE,
+  INDEX `team_id` (`team_id` ASC),
   CONSTRAINT `gameteams_ibfk_1`
     FOREIGN KEY (`game_id`)
     REFERENCES `gamesimulationdb`.`games` (`id`),
@@ -73,9 +73,9 @@ CREATE TABLE IF NOT EXISTS `gamesimulationdb`.`turns` (
   `id` INT(11) NOT NULL AUTO_INCREMENT,
   `game_id` INT(11) NOT NULL,
   `turn_number` INT(11) NOT NULL,
-  `submission_time` DATETIME NULL DEFAULT CURRENT_TIMESTAMP(),
+  `submission_time` DATETIME NULL DEFAULT CURRENT_TIMESTAMP,
   PRIMARY KEY (`id`),
-  INDEX `game_id` (`game_id` ASC) VISIBLE,
+  INDEX `game_id` (`game_id` ASC),
   CONSTRAINT `turns_ibfk_1`
     FOREIGN KEY (`game_id`)
     REFERENCES `gamesimulationdb`.`games` (`id`))
