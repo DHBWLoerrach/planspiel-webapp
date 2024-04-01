@@ -1,0 +1,100 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>test</title>
+</head>
+<style>
+       * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            font-family: "Roboto", sans-serif;
+            background-color: #2f3136;
+        }
+
+        .container {
+            display: flex;
+            height: 100vh;
+        }
+
+        .menu {
+            flex-basis: 15%;
+            background-color: #292b2f;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .tab {
+            padding: 20px;
+            cursor: pointer;
+            color: #ffffff;
+            border-bottom: 1px solid #3e4042;
+            transition: background-color 0.3s;
+        }
+
+        .tab:hover,
+        .tab.active-tab {
+            background-color: #3e4042;
+        }
+
+        #contentBox {
+            flex-grow: 1;
+            padding: 20px;
+            color: #ffffff;
+        }
+
+        .user-list {
+            flex-basis: 10%;
+            background-color: #292b2f;
+            color: white;
+            padding: 20px;
+        }
+
+        /* Verstecken aller Inhalte standardmäßig */
+        .tab-content {
+            display: none;
+            padding: 20px;
+        }
+
+        /* Anzeigen des aktiven Inhalts */
+        .tab-content.active {
+            display: block;
+        }
+</style>
+<body>
+    <div class="container">
+        <div class="box menu">
+            <div class="tab active-tab" onclick="changeTab(event, 'home')">Home</div>
+            <!-- Dynamische Tabs für Spiele hier einfügen -->
+            <div class="tab" onclick="changeTab(event, 'spiel1')">Spiel 1</div>
+            <div class="tab" onclick="changeTab(event, 'spiel2')">Spiel 2</div>
+        </div>
+        <div class="box" id="contentBox">
+            <div id="home" class="tab-content active">Home Inhalt</div>
+            <div id="spiel1" class="tab-content">Inhalt Spiel 1</div>
+            <div id="spiel2" class="tab-content">Inhalt Spiel 2</div>
+        </div>
+        <div class="box user-list">Benutzerliste</div>
+    </div>
+    <script>
+        function changeTab(evt, tabName) {
+            var i, tabcontent, tablinks;
+            tabcontent = document.getElementsByClassName("tab-content");
+            for (i = 0; i < tabcontent.length; i++) {
+                tabcontent[i].style.display = "none";
+            }
+            tablinks = document.getElementsByClassName("tab");
+            for (i = 0; i < tablinks.length; i++) {
+                tablinks[i].className = tablinks[i].className.replace(" active-tab", "");
+            }
+            document.getElementById(tabName).style.display = "block";
+            evt.currentTarget.className += " active-tab";
+        }
+    </script>
+</body>
+</html>
