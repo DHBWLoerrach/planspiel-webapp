@@ -138,14 +138,20 @@
     thead {
         background-color: #40444B;
     }
+
+    .hidden {
+    display: none !important;
+}
+
+.visible {
+    display: block !important;
+}
 </style>
 
 <body>
     <div class="container">
         <div class="menu">
-            <div class="tab active-tab" onclick="changeTab(event, 'home')">Home</div>
-            <div class="tab" onclick="changeTab(event, 'spiel1')">Spiel 1</div>
-            <div class="tab" onclick="changeTab(event, 'spiel2')">Spiel 2</div>
+            <div class="tab active-tab" data-target="home" onclick="changeTab(event, 'home')">Home</div>
         </div>
 
         <div id="contentBox">
@@ -202,42 +208,44 @@
                 </table>
                 <button id="logoutBtn">Logout</button>
             </div>
-
-            <div id="spiel1" class="tab-content">
-                <h2>Inhalt für Spiel 1</h2>
-                <!-- Inhalt für Spiel 1 -->
-            </div>
-
-            <div id="spiel2" class="tab-content">
-                <h2>Inhalt für Spiel 2</h2>
-                <!-- Inhalt für Spiel 2 -->
-            </div>
         </div>
 
         <div class="user-list">
             Benutzerliste
         </div>
     </div>
+
+
+
     <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/select2/dist/js/select2.min.js"></script>
+
+
+
     <script>
-        function changeTab(evt, tabName) {
-            var i, tabcontent, tablinks;
-            tabcontent = document.getElementsByClassName("tab-content");
-            for (i = 0; i < tabcontent.length; i++) {
-                tabcontent[i].style.display = "none";
-            }
-            tablinks = document.getElementsByClassName("tab");
-            for (i = 0; i < tablinks.length; i++) {
-                tablinks[i].className = tablinks[i].className.replace(" active-tab", "");
-            }
-            document.getElementById(tabName).style.display = "block";
-            evt.currentTarget.className += " active-tab";
-        }
+function changeTab(evt, tabName) {
+    var i, tabcontent, tablinks;
+    tabcontent = document.getElementsByClassName("tab-content");
+    for (i = 0; i < tabcontent.length; i++) {
+        tabcontent[i].classList.add("hidden");
+        tabcontent[i].classList.remove("visible");
+    }
+    tablinks = document.getElementsByClassName("tab");
+    for (i = 0; i < tablinks.length; i++) {
+        tablinks[i].classList.remove("active-tab");
+    }
+
+    const targetElement = document.getElementById(tabName);
+    if (targetElement) {
+        targetElement.classList.remove("hidden");
+        targetElement.classList.add("visible");
+        evt.currentTarget.classList.add("active-tab");
+    } else {
+        console.error(`Das Element mit der ID ${tabName} wurde nicht gefunden.`);
+    }
+}
 
 
-     
-   
         // Function to Toggle Display of Forms
         function toggleDisplay(elementId) {
             var element = document.getElementById(elementId);
@@ -245,23 +253,23 @@
         }
 
         // Event Listener for Register Team Button
-        document.getElementById('registerTeamBtn').addEventListener('click', function() {
+        document.getElementById('registerTeamBtn').addEventListener('click', function () {
             toggleDisplay('registerTeamForm');
         });
 
         // Event Listener for Register Game Button
-        document.getElementById('registerGameBtn').addEventListener('click', function() {
+        document.getElementById('registerGameBtn').addEventListener('click', function () {
             toggleDisplay('registerGameForm');
             fetchTeams(); // Fetch teams when opening the game registration form
         });
 
         // Initialize Select2 on multi-select
-        $(document).ready(function() {
+        $(document).ready(function () {
             $('#newGameTeams').select2();
         });
 
         // Handle New Team Registration Submission
-        document.getElementById('newTeamForm').addEventListener('submit', function(e) {
+        document.getElementById('newTeamForm').addEventListener('submit', function (e) {
             e.preventDefault();
             const teamName = document.getElementById('newTeamName').value;
             const teamPassword = document.getElementById('newTeamPassword').value;
@@ -275,18 +283,18 @@
                 },
                 body: JSON.stringify({ name: teamName, password: teamPassword })
             })
-            .then(response => {
-                if (response.ok) {
-                    alert('Team Registered Successfully!');
-                    location.reload(); // Reload the page
-                } else {
-                    alert('Failed to register the team');
-                }
-            })
-            .catch((error) => {
-                console.error('Error:', error);
-                alert('Error registering the team');
-            });
+                .then(response => {
+                    if (response.ok) {
+                        alert('Team Registered Successfully!');
+                        location.reload(); // Reload the page
+                    } else {
+                        alert('Failed to register the team');
+                    }
+                })
+                .catch((error) => {
+                    console.error('Error:', error);
+                    alert('Error registering the team');
+                });
         });
 
         // Fetch and populate teams for game registration
@@ -301,20 +309,20 @@
                 }
             })
 
-            .then(response => response.json())
-            .then(data => {
-                data.forEach(team => {
-                    let option = document.createElement('option');
-                    option.value = team.id;
-                    option.textContent = team.name;
-                    teamSelect.appendChild(option);
-                });
-            })
-            .catch(error => console.error('Error:', error));
+                .then(response => response.json())
+                .then(data => {
+                    data.forEach(team => {
+                        let option = document.createElement('option');
+                        option.value = team.id;
+                        option.textContent = team.name;
+                        teamSelect.appendChild(option);
+                    });
+                })
+                .catch(error => console.error('Error:', error));
         }
 
         // Handle New Game Registration Submission
-        document.getElementById('newGameForm').addEventListener('submit', function(e) {
+        document.getElementById('newGameForm').addEventListener('submit', function (e) {
             e.preventDefault();
             const gameName = document.getElementById('newGameName').value;
             const selectedTeams = Array.from(document.getElementById('newGameTeams').selectedOptions).map(option => option.value);
@@ -328,18 +336,18 @@
                 },
                 body: JSON.stringify({ name: gameName, team_ids: selectedTeams, status: 'active' })
             })
-            .then(response => {
-                if (response.ok) {
-                    alert('Game Registered Successfully!');
-                    location.reload(); // Reload the page
-                } else {
-                    alert('Failed to register the game');
-                }
-            })
-            .catch((error) => {
-                console.error('Error:', error);
-                alert('Error registering the game');
-            });
+                .then(response => {
+                    if (response.ok) {
+                        alert('Game Registered Successfully!');
+                        location.reload(); // Reload the page
+                    } else {
+                        alert('Failed to register the game');
+                    }
+                })
+                .catch((error) => {
+                    console.error('Error:', error);
+                    alert('Error registering the game');
+                });
         });
 
 
@@ -361,7 +369,7 @@
             // Delete Button
             let deleteBtn = document.createElement('button');
             deleteBtn.textContent = 'Delete';
-            deleteBtn.onclick = function() { deleteGame(game.id); };
+            deleteBtn.onclick = function () { deleteGame(game.id); };
             cellDelete.appendChild(deleteBtn);
         }
 
@@ -378,18 +386,18 @@
                     'Authorization': 'Bearer ' + token
                 }
             })
-            .then(response => {
-                if (response.ok) {
-                    alert('Game deleted successfully');
-                    location.reload(); // Reload the page
-                } else {
-                    alert('Failed to delete the game');
-                }
-            })
-            .catch(error => {
-                console.error('Error:', error);
-                alert('Error deleting the game');
-            });
+                .then(response => {
+                    if (response.ok) {
+                        alert('Game deleted successfully');
+                        location.reload(); // Reload the page
+                    } else {
+                        alert('Failed to delete the game');
+                    }
+                })
+                .catch(error => {
+                    console.error('Error:', error);
+                    alert('Error deleting the game');
+                });
         }
 
         // Remove the game row from the table
@@ -411,11 +419,11 @@
                     'Authorization': 'Bearer ' + token
                 }
             })
-            .then(response => response.json())
-            .then(teamsData => {
-                teamsData.forEach(team => addTeamRow(team));
-            })
-            .catch(error => console.error('Error:', error));
+                .then(response => response.json())
+                .then(teamsData => {
+                    teamsData.forEach(team => addTeamRow(team));
+                })
+                .catch(error => console.error('Error:', error));
         }
 
         function addTeamRow(team) {
@@ -431,7 +439,7 @@
             // Delete Button for Team
             let deleteBtn = document.createElement('button');
             deleteBtn.textContent = 'Delete';
-            deleteBtn.onclick = function() { deleteTeam(team.id); };
+            deleteBtn.onclick = function () { deleteTeam(team.id); };
             cellDelete.appendChild(deleteBtn);
         }
 
@@ -447,22 +455,22 @@
                     'Authorization': 'Bearer ' + token
                 }
             })
-            .then(response => {
-                if (response.ok) {
-                    alert('Team deleted successfully');
-                    location.reload(); // Reload the page to update the team list
-                } else {
-                    alert('Failed to delete the team');
-                }
-            })
-            .catch(error => {
-                console.error('Error:', error);
-                alert('Error deleting the team');
-            });
+                .then(response => {
+                    if (response.ok) {
+                        alert('Team deleted successfully');
+                        location.reload(); // Reload the page to update the team list
+                    } else {
+                        alert('Failed to delete the team');
+                    }
+                })
+                .catch(error => {
+                    console.error('Error:', error);
+                    alert('Error deleting the team');
+                });
         }
 
         // Fetch and display games on page load
-        document.addEventListener('DOMContentLoaded', function() {
+        document.addEventListener('DOMContentLoaded', function () {
             const token = localStorage.getItem('access_token');
             fetch('http://127.0.0.1:5000/games', {
                 method: 'GET',
@@ -470,21 +478,89 @@
                     'Authorization': 'Bearer ' + token
                 }
             })
-            .then(response => response.json())
-            .then(gamesData => {
-                gamesData.forEach(game => addGameRow(game));
-            })
-            .catch(error => console.error('Error:', error));
+                .then(response => response.json())
+                .then(gamesData => {
+                    gamesData.forEach(game => addGameRow(game));
+                })
+                .catch(error => console.error('Error:', error));
             fetchTeamsAndPopulate();
         });
 
         // Logout functionality
-        document.getElementById('logoutBtn').addEventListener('click', function() {
+        document.getElementById('logoutBtn').addEventListener('click', function () {
             localStorage.removeItem('access_token');
             window.location.href = 'login.html'; // Update with your login page URL
         });
 
-        
+        document.addEventListener('DOMContentLoaded', function () {
+            fetchSpieleUndErstelleTabs();
+        });
+
+        function fetchSpieleUndErstelleTabs() {
+            const token = localStorage.getItem('access_token'); // Annahme: JWT ist im Local Storage gespeichert
+            if (!token) {
+                console.error('Kein Zugriffstoken gefunden. Bitte einloggen.');
+                return;
+            }
+
+            fetch('http://127.0.0.1:5000/games', {
+                method: 'GET',
+                headers: {
+                    'Authorization': 'Bearer ' + token
+                }
+            })
+                .then(response => {
+                    if (!response.ok) {
+                        throw new Error('Fehler beim Laden der Spiele: ' + response.statusText);
+                    }
+                    return response.json();
+                })
+                .then(spiele => {
+                    spiele.forEach(spiel => {
+                        erstelleTabFuerSpiel(spiel);
+                        erstelleInhaltsbereichFuerSpiel(spiel);
+                    });
+                    initTabsEventListeners(); // Setze Event-Listener für alle Tabs, nachdem sie erstellt wurden
+                })
+                .catch(error => console.error(error));
+        }
+        function erstelleTabFuerSpiel(spiel) {
+    const menu = document.querySelector('.menu');
+    const tab = document.createElement('div');
+    tab.className = 'tab';
+    tab.setAttribute('data-target', `content-${spiel.id}`); // Stelle sicher, dass data-target korrekt gesetzt ist
+    tab.textContent = spiel.name;
+    tab.onclick = function(event) { changeTab(event, `content-${spiel.id}`); }; // Änderung hier
+    menu.appendChild(tab);
+}
+
+        function erstelleInhaltsbereichFuerSpiel(spiel) {
+            const contentBox = document.getElementById('contentBox');
+            const content = document.createElement('div');
+            content.id = `content-${spiel.id}`;
+            content.className = 'tab-content';
+            content.innerHTML = `<h2>Inhalt für ${spiel.name}</h2>`;
+            contentBox.appendChild(content);
+        }
+
+        function initTabsEventListeners() {
+    const tabs = document.querySelectorAll('.tab');
+    tabs.forEach(tab => {
+        tab.addEventListener('click', function (event) {
+            const dataTarget = this.getAttribute('data-target');
+            if (dataTarget) {
+                changeTab(event, dataTarget);
+            } else {
+                console.error('Das data-target Attribut ist nicht gesetzt.');
+            }
+        });
+    });
+}
+
+
+
+
     </script>
 </body>
+
 </html>
