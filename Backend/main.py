@@ -1,8 +1,10 @@
-from flask import Flask, request, jsonify, send_from_directory
+from flask import Flask, request, jsonify, send_from_directory, send_file
 from flask_sqlalchemy import SQLAlchemy
 from flask_marshmallow import Marshmallow
 from flask_jwt_extended import JWTManager, create_access_token, jwt_required, get_jwt_identity
 import os
+import pandas as pd
+from io import BytesIO
 from datetime import datetime
 from flask_cors import CORS
 
@@ -292,6 +294,24 @@ def add_turn():
     db.session.commit()
 
     return turn_schema.jsonify(new_turn)
+
+# player routes
+@app.route('/upload', methods=['POST'])
+def upload_file():
+    uploaded_file = request.files['file']
+    if uploaded_file.filename != '':
+        data = pd.read_excel(uploaded_file)
+        return jsonify(data.to_dict(orient='records'))
+
+@app.route('/save', methods=['POST'])
+def save_file():
+    data = request.json
+    df = pd.DataFrame(data)
+    output = BytesIO()
+    with pd.ExcelWriter(output, engine='openpyxl') as writer:
+        df.to_excel(writer, index=False)
+    output.seek(0)
+    return send_file(output, attachment_filename='updated_file.xlsx', as_attachment=True)
 
 # Run Server
 if __name__ == '__main__':
