@@ -202,10 +202,18 @@ def register_game():
 
     # Save the new game to the database
     db.session.add(new_game)
+    db.session.flush()
+
+    # Retrieve team IDs from the request and associate them with the game
+    team_ids = request.json.get('team_ids', [])
+    for team_id in team_ids:
+        team = Team.query.get(team_id)
+        if team:
+            new_game.teams.append(team)
+
     db.session.commit()
 
     return jsonify({"msg": "Game created successfully", "game_id": new_game.id}), 201
-
 
 @app.route('/game/<int:game_id>', methods=['PUT'])
 @jwt_required()
