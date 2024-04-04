@@ -55,8 +55,20 @@ class Game(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     name = db.Column(db.String(100), unique=True)
     status = db.Column(db.String(100))
+    num_companies = db.Column(db.Integer)
+    num_periods = db.Column(db.Integer)
+    offset = db.Column(db.Integer)
+    num_markets = db.Column(db.Integer)
+    num_cells = db.Column(db.Integer)
+    market_0_activation = db.Column(db.Integer)
+    market_1_activation = db.Column(db.Integer)
+    market_2_activation = db.Column(db.Integer)
+    market_3_activation = db.Column(db.Integer)
+    ideal_rd = db.Column(db.Integer)
+    cost_industry_report = db.Column(db.Float)
+    cost_market_report = db.Column(db.Float)
 
-    # Define the many-to-many relationship
+    # Relationships
     teams = db.relationship('Team', secondary=GameTeamAssociation, lazy='subquery',
                             backref=db.backref('games', lazy=True))
 
@@ -154,19 +166,39 @@ def register_game():
     if current_user.lower() != 'gamemaster':
         return jsonify({"msg": "Unauthorized access"}), 401
 
-    # Extract game details and team IDs from the request
+    # Extract game details from the request
     name = request.json.get('name')
-    status = request.json.get('status', 'pending')  # Default status
-    team_ids = request.json.get('team_ids', [])  # List of team IDs
+    status = request.json.get('status', 'pending')
+    num_companies = request.json.get('num_companies')
+    num_periods = request.json.get('num_periods')
+    offset = request.json.get('offset')
+    num_markets = request.json.get('num_markets')
+    num_cells = request.json.get('num_cells')
+    market_0_activation = request.json.get('market_0_activation')
+    market_1_activation = request.json.get('market_1_activation')
+    market_2_activation = request.json.get('market_2_activation')
+    market_3_activation = request.json.get('market_3_activation')
+    ideal_rd = request.json.get('ideal_rd')
+    cost_industry_report = request.json.get('cost_industry_report')
+    cost_market_report = request.json.get('cost_market_report')
 
-    # Create new game instance
-    new_game = Game(name=name, status=status)
-
-    # Attach teams to the game
-    for team_id in team_ids:
-        team = Team.query.get(team_id)
-        if team:
-            new_game.teams.append(team)
+    # Create new game instance with all the fields
+    new_game = Game(
+        name=name,
+        status=status,
+        num_companies=num_companies,
+        num_periods=num_periods,
+        offset=offset,
+        num_markets=num_markets,
+        num_cells=num_cells,
+        market_0_activation=market_0_activation,
+        market_1_activation=market_1_activation,
+        market_2_activation=market_2_activation,
+        market_3_activation=market_3_activation,
+        ideal_rd=ideal_rd,
+        cost_industry_report=cost_industry_report,
+        cost_market_report=cost_market_report
+    )
 
     # Save the new game to the database
     db.session.add(new_game)
@@ -175,29 +207,30 @@ def register_game():
     return jsonify({"msg": "Game created successfully", "game_id": new_game.id}), 201
 
 
-# Create a Game
-@app.route('/game', methods=['POST'])
-def add_game():
-    name = request.json['name']
-    status = request.json['status']
+@app.route('/game/<int:game_id>', methods=['PUT'])
+@jwt_required()
+def update_game(game_id):
+    game = Game.query.get_or_404(game_id)
 
-    new_game = Game(name=name, status=status)
+    # Update fields
+    game.name = request.json.get('name', game.name)
+    game.status = request.json.get('status', game.status)
+    game.num_companies = request.json.get('num_companies', game.num_companies)
+    game.num_periods = request.json.get('num_periods', game.num_periods)
+    game.offset = request.json.get('offset', game.offset)
+    game.num_markets = request.json.get('num_markets', game.num_markets)
+    game.num_cells = request.json.get('num_cells', game.num_cells)
+    game.market_0_activation = request.json.get('market_0_activation', game.market_0_activation)
+    game.market_1_activation = request.json.get('market_1_activation', game.market_1_activation)
+    game.market_2_activation = request.json.get('market_2_activation', game.market_2_activation)
+    game.market_3_activation = request.json.get('market_3_activation', game.market_3_activation)
+    game.ideal_rd = request.json.get('ideal_rd', game.ideal_rd)
+    game.cost_industry_report = request.json.get('cost_industry_report', game.cost_industry_report)
+    game.cost_market_report = request.json.get('cost_market_report', game.cost_market_report)
 
-    db.session.add(new_game)
     db.session.commit()
 
-    return game_schema.jsonify(new_game)
-
-@app.route('/game/<int:game_id>', methods=['DELETE'])
-@jwt_required()
-def delete_game(game_id):
-    game = Game.query.get(game_id)
-    if game:
-        db.session.delete(game)
-        db.session.commit()
-        return jsonify({'message': 'Game deleted successfully'}), 200
-    else:
-        return jsonify({'message': 'Game not found'}), 404
+    return game_schema.jsonify(game)
 
 
 @app.route('/games', methods=['GET'])

@@ -123,8 +123,34 @@
             <input type="text" id="newGameName" name="newGameName"><br>
             <label for="newGameTeams">Select Teams:</label><br>
             <select multiple id="newGameTeams" style="width: 200px;">
-                <!-- Teams will be populated here -->
             </select><br><br>
+
+            <label for="marketActivations">Select Active Markets:</label><br>
+            <select multiple id="marketActivations" style="width: 200px;">
+                <option value="market_0_activation">Market 0 (SOLID - Inland)</option>
+                <option value="market_1_activation">Market 1 (SOLID - Ausland)</option>
+                <option value="market_2_activation">Market 2 (IDEAL - Inland)</option>
+                <option value="market_3_activation">Market 3 (IDEAL - Ausland)</option>
+            </select><br><br>
+
+            <label for="numCells" id="numCells">Number of Cells:</label><br>
+            <input type="number" id="numCells" name="numCells" value="10"><br>
+
+            <label for="numPeriods">Number of Periods:</label><br>
+            <input type="number" id="numPeriods" name="numPeriods" value="10"><br>
+
+            <label for="offset">Offset:</label><br>
+            <input type="number" id="offset" name="offset" value="10"><br>
+
+            <label for="idealRd" id="idealRd">Ideal R&D:</label><br>
+            <input type="number" id="idealRd" name="idealRd" value="10"><br>
+
+            <label for="costIndustryReport" id="costIndustryReport">Cost Industry Report:</label><br>
+            <input type="number" id="costIndustryReport" name="costIndustryReport" value="10"><br>
+
+            <label for="costMarketReport" id="costMarketReport">Cost Market Report:</label><br>
+            <input type="number" id="costMarketReport" name="costMarketReport" value="10"><br>
+
             <input type="submit" value="Register Game">
         </form>
     </div>
@@ -141,7 +167,6 @@
             </tr>
         </thead>
         <tbody>
-            <!-- Games will be populated here -->
         </tbody>
     </table>
 
@@ -155,7 +180,6 @@
             </tr>
         </thead>
         <tbody>
-            <!-- Teams will be populated here -->
         </tbody>
     </table>
 
@@ -165,6 +189,11 @@
     <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/select2/dist/js/select2.min.js"></script>
     <script>
+        $(document).ready(function() {
+            $('#newGameTeams').select2();
+            $('#marketActivations').select2(); // Initialize Select2 for marketActivations
+        });
+
         // Function to Toggle Display of Forms
         function toggleDisplay(elementId) {
             var element = document.getElementById(elementId);
@@ -219,33 +248,91 @@
         // Fetch and populate teams for game registration
         function fetchTeams() {
             const teamSelect = document.getElementById('newGameTeams');
+            const teamsTableBody = document.getElementById('teamsTable').getElementsByTagName('tbody')[0];
             teamSelect.innerHTML = ''; // Clear existing options
+            teamsTableBody.innerHTML = ''; // Clear teams table
             const token = localStorage.getItem('access_token');
+
             fetch('http://127.0.0.1:5000/teams', {
                 method: 'GET',
                 headers: {
                     'Authorization': 'Bearer ' + token
                 }
             })
-
             .then(response => response.json())
             .then(data => {
                 data.forEach(team => {
+                    // Populate teams in multi-select
                     let option = document.createElement('option');
                     option.value = team.id;
                     option.textContent = team.name;
                     teamSelect.appendChild(option);
+
+                    // Populate teams table
+                    addTeamRow(team);
                 });
             })
             .catch(error => console.error('Error:', error));
         }
 
+        function fetchGames() {
+            const gamesTableBody = document.getElementById('gamesTable').getElementsByTagName('tbody')[0];
+            gamesTableBody.innerHTML = ''; // Clear games table
+            const token = localStorage.getItem('access_token');
+
+            fetch('http://127.0.0.1:5000/games', {
+                method: 'GET',
+                headers: {
+                    'Authorization': 'Bearer ' + token
+                }
+            })
+            .then(response => response.json())
+            .then(gamesData => {
+                gamesData.forEach(game => addGameRow(game));
+            })
+            .catch(error => console.error('Error:', error));
+        }
+
+
         // Handle New Game Registration Submission
         document.getElementById('newGameForm').addEventListener('submit', function(e) {
             e.preventDefault();
             const gameName = document.getElementById('newGameName').value;
+
             const selectedTeams = Array.from(document.getElementById('newGameTeams').selectedOptions).map(option => option.value);
+            const selectedMarkets = Array.from(document.getElementById('marketActivations').selectedOptions).map(option => option.value);;
+
+            const marketActivations = {
+                market_0_activation: selectedMarkets.includes("market_0_activation"),
+                market_1_activation: selectedMarkets.includes("market_1_activation"),
+                market_2_activation: selectedMarkets.includes("market_2_activation"),
+                market_3_activation: selectedMarkets.includes("market_3_activation")
+            };
+
+            const num_cells = document.getElementById('numCells').value;
+
+            console.log(num_cells)
+            const gameData = {
+                name: gameName,
+                team_ids: selectedTeams,
+                status: 'active',
+                num_companies: parseInt(selectedTeams.length,10),
+                num_periods: parseInt(document.getElementById('numPeriods').value, 10),
+                offset: parseInt(document.getElementById('offset').value, 10),
+                num_markets: parseInt(selectedMarkets.length, 10),
+                num_cells: parseInt(document.getElementById('numCells').value, 10),
+                market_0_activation: marketActivations.market_0_activation,
+                market_1_activation: marketActivations.market_1_activation,
+                market_2_activation: marketActivations.market_2_activation,
+                market_3_activation: marketActivations.market_3_activation,
+                ideal_rd: parseInt(document.getElementById('idealRd').value, 10),
+                cost_industry_report: parseInt(document.getElementById('costIndustryReport').value, 10),
+                cost_market_report: parseInt(document.getElementById('costMarketReport').value, 10)
+            };
+
             const token = localStorage.getItem('access_token');
+
+            const requestData = JSON.stringify(gameData);
 
             fetch('http://127.0.0.1:5000/gamemaster/register_game', {
                 method: 'POST',
@@ -253,7 +340,7 @@
                     'Content-Type': 'application/json',
                     'Authorization': 'Bearer ' + token
                 },
-                body: JSON.stringify({ name: gameName, team_ids: selectedTeams, status: 'active' })
+                body: requestData
             })
             .then(response => {
                 if (response.ok) {
@@ -340,6 +427,8 @@
             })
             .then(response => response.json())
             .then(teamsData => {
+                const teamsTableBody = document.getElementById('teamsTable').getElementsByTagName('tbody')[0];
+                teamsTableBody.innerHTML = ''; // Clear existing content
                 teamsData.forEach(team => addTeamRow(team));
             })
             .catch(error => console.error('Error:', error));
@@ -390,6 +479,8 @@
 
         // Fetch and display games on page load
         document.addEventListener('DOMContentLoaded', function() {
+            fetchTeams(); // Fetch teams and populate teams table and multi-select
+            fetchGames(); // Fetch games and populate games table
             const token = localStorage.getItem('access_token');
             fetch('http://127.0.0.1:5000/games', {
                 method: 'GET',
