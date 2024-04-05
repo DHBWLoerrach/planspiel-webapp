@@ -1,0 +1,303 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>second table</title>
+    <!-- Add Select2 CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/select2/dist/css/select2.min.css" rel="stylesheet" />
+    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500&display=swap" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/select2/dist/css/select2.min.css" rel="stylesheet" />
+    <style>
+        body {
+            font-family: "Roboto", sans-serif;
+            background-color: #2f3136;
+            color: #ffffff;
+            margin: 0;
+            padding: 20px;
+        }
+
+        h2, h3 {
+            color: #ffffff;
+        }
+
+        button {
+            background-color: #7289DA;
+            color: #ffffff;
+            padding: 10px 15px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            margin-bottom: 20px;
+            transition: background-color 0.3s ease;
+        }
+
+        button:hover {
+            background-color: #677bc4;
+        }
+
+        form {
+            background-color: #36393F;
+            padding: 20px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+        }
+
+        label {
+            color: #b9bbbe;
+        }
+
+        input[type="text"],
+        input[type="password"],
+        select {
+            width: 100%;
+            padding: 10px;
+            margin: 10px 0;
+            background-color: #40444B;
+            border: 1px solid #202225;
+            border-radius: 4px;
+            color: #ffffff;
+        }
+
+        .select2-container .select2-selection--multiple {
+            background-color: #40444B;
+            border: 1px solid #202225;
+        }
+
+        .select2-dropdown {
+            background-color: #40444B;
+            color: #ffffff;
+        }
+
+        .select2-results__option {
+            padding-right: 20px;
+            background-color: #40444B;
+            color: #ffffff;
+        }
+
+        .select2-results__option--highlighted[aria-selected] {
+            background-color: #7289DA;
+        }
+
+        #gamesTable, #teamsTable {
+            width: 100%;
+            border-collapse: collapse;
+            background-color: #36393F;
+            margin-bottom: 20px;
+        }
+
+        #gamesTable th, #gamesTable td, #teamsTable th, #teamsTable td {
+            border: 1px solid #202225;
+            padding: 8px;
+            text-align: left;
+            color: #ffffff;
+        }
+
+        #gamesTable thead, #teamsTable thead {
+            background-color: #40444B;
+        }
+    </style>
+</head>
+<body>
+    <table id="marketingTable">
+        <tbody>
+            <th height="19">
+                <td id="cell-24-8">Marketing</td>
+                <td id="cell-24-9"></td>
+                <td id="cell-24-10"></td>
+                <td id="cell-24-11"></td>
+                <td id="cell-24-12"></td>
+            </th>
+            <tr height="19">
+                <td id="cell-5-8">Produktionsplan</td>
+                <td id="cell-5-9"></td>
+                <td id="cell-5-10">SOLID</td>
+                <td id="cell-5-11">IDEAL</td>
+                <td id="cell-5-12"></td>
+            </tr>
+            <tr height="19">
+                <td id="cell-6-8">Fertigungsmengen (Planmengen)</td>
+                <td id="cell-6-9">Stk.</td>
+                <td align="right" id="cell-6-10">49.000</td>
+                <td align="right" id="cell-6-11">0</td>
+                <td id="cell-6-12"></td>
+            </tr>
+            <tr height="19">
+                <td id="cell-7-8"></td>
+                <td id="cell-7-9"></td>
+                <td id="cell-7-10"></td>
+                <td id="cell-7-11"></td>
+                <td id="cell-7-12"></td>
+            </tr>
+            <tr height="19">
+                <td id="cell-8-8">Materialeinkauf</td>
+                <td id="cell-8-9"></td>
+                <td id="cell-8-10">SOLID</td>
+                <td id="cell-8-11">IDEAL</td>
+                <td id="cell-8-12">Gesamt</td>
+            </tr>
+            <tr height="19">
+                <td id="cell-9-8">Betriebsstoffe</td>
+                <td id="cell-9-9">Stk.</td>
+                <td align="right" id="cell-9-10">49.000</td>
+                <td align="right" id="cell-9-11">0</td>
+                <td align="right" id="cell-9-12">49.000</td>
+            </tr>
+            <tr height="19">
+                <td id="cell-10-8">Material 'S' (SOLID)</td>
+                <td id="cell-10-9">Stk.</td>
+                <td align="right" id="cell-10-10">50.000</td>
+                <td id="cell-10-11"></td>
+                <td align="right" id="cell-10-12">50.000</td>
+            </tr>
+            <tr height="19">
+                <td id="cell-11-8">Material 'I' (IDEAL)</td>
+                <td id="cell-11-9">Stk.</td>
+                <td id="cell-11-10"></td>
+                <td align="right" id="cell-11-11">0</td>
+                <td align="right" id="cell-11-12">0</td>
+            </tr>
+            <tr height="19">
+                <td id="cell-12-8"></td>
+                <td id="cell-12-9"></td>
+                <td id="cell-12-10"></td>
+                <td id="cell-12-11"></td>
+                <td id="cell-12-12"></td>
+            </tr>
+            <tr height="19">
+                <td id="cell-13-8">Technische Anlagen</td>
+                <td id="cell-13-9"></td>
+                <td id="cell-13-10">neu</td>
+                <td id="cell-13-11">alt</td>
+                <td id="cell-13-12"></td>
+            </tr>
+            <tr height="19">
+                <td id="cell-14-8">Anlagen (Werksttte 01)</td>
+                <td id="cell-14-9">Anlage</td>
+                <td id="cell-14-10">Typ 'M' neu</td>
+                <td id="cell-14-11">'M'(-8)</td>
+                <td id="cell-14-12"></td>
+            </tr>
+            <tr height="19">
+                <td id="cell-15-8">Anlagen (Werksttte 02)</td>
+                <td id="cell-15-9">Anlage</td>
+                <td id="cell-15-10">'M'(-7)</td>
+                <td id="cell-15-11">'M'(-7)</td>
+                <td id="cell-15-12"></td>
+            </tr>
+            <tr height="19">
+                <td id="cell-16-8">Anlagen (Werksttte 03)</td>
+                <td id="cell-16-9">Anlage</td>
+                <td id="cell-16-10">'M'(-4)</td>
+                <td id="cell-16-11">'M'(-4)</td>
+                <td id="cell-16-12"></td>
+            </tr>
+            <tr height="19">
+                <td id="cell-17-8">Anlagen (Werksttte 04)</td>
+                <td id="cell-17-9">Anlage</td>
+                <td id="cell-17-10">'M'(-3)</td>
+                <td id="cell-17-11">'M'(-3)</td>
+                <td id="cell-17-12"></td>
+            </tr>
+            <tr height="19">
+                <td id="cell-18-8">Anlagen (Werksttte 05)</td>
+                <td id="cell-18-9">Anlage</td>
+                <td id="cell-18-10"></td>
+                <td id="cell-18-11"></td>
+                <td id="cell-18-12"></td>
+            </tr>
+            <tr height="19">
+                <td id="cell-19-8">Anlagen (Werksttte 06)</td>
+                <td id="cell-19-9">Anlage</td>
+                <td id="cell-19-10"></td>
+                <td id="cell-19-11"></td>
+                <td id="cell-19-12"></td>
+            </tr>
+            <tr height="19">
+                <td id="cell-20-8">Anlagen (Werksttte 07)</td>
+                <td id="cell-20-9">Anlage</td>
+                <td id="cell-20-10"></td>
+                <td id="cell-20-11"></td>
+                <td id="cell-20-12"></td>
+            </tr>
+            <tr height="19">
+                <td id="cell-21-8">Anlagen (Werksttte 08)</td>
+                <td id="cell-21-9">Anlage</td>
+                <td id="cell-21-10"></td>
+                <td id="cell-21-11"></td>
+                <td id="cell-21-12"></td>
+            </tr>
+            <tr height="19">
+                <td id="cell-22-8"></td>
+                <td id="cell-22-9"></td>
+                <td id="cell-22-10"></td>
+                <td id="cell-22-11"></td>
+                <td id="cell-22-12"></td>
+            </tr>
+            <tr height="19">
+                <td id="cell-23-8"></td>
+                <td id="cell-23-9"></td>
+                <td id="cell-23-10"></td>
+                <td id="cell-23-11"></td>
+                <td id="cell-23-12"></td>
+            </tr>
+        </tbody>
+    </table>
+<br>
+<br>
+    <table id="hrTable>
+        <tbody">
+            <th height="19">
+                <td id="cell-24-8">Human Resources</td>
+                <td id="cell-24-9"></td>
+                <td id="cell-24-10"></td>
+                <td id="cell-24-11"></td>
+                <td id="cell-24-12"></td>
+            </th>
+            <tr height="19">
+                <td id="cell-25-8">Personalmanagement</td>
+                <td id="cell-25-9"></td>
+                <td id="cell-25-10"></td>
+                <td id="cell-25-11"></td>
+                <td id="cell-25-12">Gesamt</td>
+            </tr>
+            <tr height="19">
+                <td id="cell-26-8">Fertigungspersonal (Planbestand)</td>
+                <td id="cell-26-9">Anzahl MA</td>
+                <td id="cell-26-10"></td>
+                <td id="cell-26-11"></td>
+                <td align="right" id="cell-26-12">415</td>
+            </tr>
+            <tr height="19">
+                <td id="cell-27-8">Personalentwicklung</td>
+                <td id="cell-27-9">Tsd. EUR</td>
+                <td id="cell-27-10"></td>
+                <td id="cell-27-11"></td>
+                <td align="right" id="cell-27-12">600</td>
+            </tr>
+            <tr height="19">
+                <td id="cell-28-8">Gehaltsaufschlag (freiwillig)</td>
+                <td id="cell-28-9">%</td>
+                <td id="cell-28-10"></td>
+                <td id="cell-28-11"></td>
+                <td align="right" id="cell-28-12">1,0</td>
+            </tr>
+            <tr height="19">
+                <td id="cell-29-8">Investitionen in die BGA (freiwillig)</td>
+                <td id="cell-29-9">Tsd. EUR</td>
+                <td id="cell-29-10"></td>
+                <td id="cell-29-11"></td>
+                <td align="right" id="cell-29-12">300</td>
+            </tr>
+            <tr height="19">
+                <td id="cell-30-8"></td>
+                <td id="cell-30-9"></td>
+                <td id="cell-30-10"></td>
+                <td id="cell-30-11"></td>
+                <td id="cell-30-12"></td>
+            </tr>
+        </tbody>
+    </table>
+    <script src="script.js"></script>
+</body>
+</html>

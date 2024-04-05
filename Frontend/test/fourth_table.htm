@@ -1,0 +1,228 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>fourth table</title>
+    <!-- Add Select2 CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/select2/dist/css/select2.min.css" rel="stylesheet" />
+    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500&display=swap" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/select2/dist/css/select2.min.css" rel="stylesheet" />
+    <style>
+        body {
+            font-family: "Roboto", sans-serif;
+            background-color: #2f3136;
+            color: #ffffff;
+            margin: 0;
+            padding: 20px;
+        }
+
+        h2, h3 {
+            color: #ffffff;
+        }
+
+        button {
+            background-color: #7289DA;
+            color: #ffffff;
+            padding: 10px 15px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            margin-bottom: 20px;
+            transition: background-color 0.3s ease;
+        }
+
+        button:hover {
+            background-color: #677bc4;
+        }
+
+        form {
+            background-color: #36393F;
+            padding: 20px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+        }
+
+        label {
+            color: #b9bbbe;
+        }
+
+        input[type="text"],
+        input[type="password"],
+        select {
+            width: 100%;
+            padding: 10px;
+            margin: 10px 0;
+            background-color: #40444B;
+            border: 1px solid #202225;
+            border-radius: 4px;
+            color: #ffffff;
+        }
+
+        .select2-container .select2-selection--multiple {
+            background-color: #40444B;
+            border: 1px solid #202225;
+        }
+
+        .select2-dropdown {
+            background-color: #40444B;
+            color: #ffffff;
+        }
+
+        .select2-results__option {
+            padding-right: 20px;
+            background-color: #40444B;
+            color: #ffffff;
+        }
+
+        .select2-results__option--highlighted[aria-selected] {
+            background-color: #7289DA;
+        }
+
+        #gamesTable, #teamsTable {
+            width: 100%;
+            border-collapse: collapse;
+            background-color: #36393F;
+            margin-bottom: 20px;
+        }
+
+        #gamesTable th, #gamesTable td, #teamsTable th, #teamsTable td {
+            border: 1px solid #202225;
+            padding: 8px;
+            text-align: left;
+            color: #ffffff;
+        }
+
+        #gamesTable thead, #teamsTable thead {
+            background-color: #40444B;
+        }
+    </style>
+</head>
+<body>
+    <table>
+        <tbody>
+            <tr height="20" style="height:15.0pt">
+                <td class="xl12425086" id="cell-14-28">'M'(-8)</td>
+                <td class="xl11225086" id="cell-14-29" style="border-left:none">--</td>
+                <td class="xl11225086" id="cell-14-30" style="border-left:none">Typ 'S' neu</td>
+                <td class="xl11225086" id="cell-14-31" style="border-left:none">Typ 'M' neu</td>
+                <td class="xl11225086" id="cell-14-32" style="border-left:none">Typ 'L' neu</td>
+                <td class="xl9625086" id="cell-14-33"></td>
+                </tr>
+                <tr height="20" style="height:15.0pt">
+                <td class="xl12425086" id="cell-15-28" style="border-top:none">'M'(-7)</td>
+                <td class="xl11225086" id="cell-15-29" style="border-top:none;border-left:none">--</td>
+                <td class="xl11225086" id="cell-15-30" style="border-top:none;border-left:none">Typ 'S' neu</td>
+                <td class="xl11225086" id="cell-15-31" style="border-top:none;border-left:none">Typ 'M' neu</td>
+                <td class="xl11225086" id="cell-15-32" style="border-top:none;border-left:none">Typ 'L' neu</td>
+                <td class="xl9625086" id="cell-15-33"></td>
+                </tr>
+                <tr height="20" style="height:15.0pt">
+                <td class="xl12425086" id="cell-16-28" style="border-top:none">'M'(-4)</td>
+                <td class="xl11225086" id="cell-16-29" style="border-top:none;border-left:none">--</td>
+                <td class="xl11225086" id="cell-16-30" style="border-top:none;border-left:none">Typ 'S' neu</td>
+                <td class="xl11225086" id="cell-16-31" style="border-top:none;border-left:none">Typ 'M' neu</td>
+                <td class="xl11225086" id="cell-16-32" style="border-top:none;border-left:none">Typ 'L' neu</td>
+                <td class="xl9625086" id="cell-16-33"></td>
+                </tr>
+                <tr height="20" style="height:15.0pt">
+                <td class="xl12425086" id="cell-17-28" style="border-top:none">'M'(-3)</td>
+                <td class="xl11225086" id="cell-17-29" style="border-top:none;border-left:none">--</td>
+                <td class="xl11225086" id="cell-17-30" style="border-top:none;border-left:none">Typ 'S' neu</td>
+                <td class="xl11225086" id="cell-17-31" style="border-top:none;border-left:none">Typ 'M' neu</td>
+                <td class="xl11225086" id="cell-17-32" style="border-top:none;border-left:none">Typ 'L' neu</td>
+                <td class="xl9625086" id="cell-17-33"></td>
+                </tr>
+                <tr height="20" style="height:15.0pt">
+                <td class="xl12425086" id="cell-18-28" style="border-top:none"></td>
+                <td class="xl11225086" id="cell-18-29" style="border-top:none;border-left:none">--</td>
+                <td class="xl11225086" id="cell-18-30" style="border-top:none;border-left:none">Typ 'S' neu</td>
+                <td class="xl11225086" id="cell-18-31" style="border-top:none;border-left:none">Typ 'M' neu</td>
+                <td class="xl11225086" id="cell-18-32" style="border-top:none;border-left:none">Typ 'L' neu</td>
+                <td class="xl9625086" id="cell-18-33"></td>
+                </tr>
+                <tr height="20" style="height:15.0pt">
+                <td class="xl12425086" id="cell-19-28" style="border-top:none"></td>
+                <td class="xl11225086" id="cell-19-29" style="border-top:none;border-left:none">--</td>
+                <td class="xl11225086" id="cell-19-30" style="border-top:none;border-left:none">Typ 'S' neu</td>
+                <td class="xl11225086" id="cell-19-31" style="border-top:none;border-left:none">Typ 'M' neu</td>
+                <td class="xl11225086" id="cell-19-32" style="border-top:none;border-left:none">Typ 'L' neu</td>
+                <td class="xl9625086" id="cell-19-33"></td>
+                </tr>
+                <tr height="20" style="height:15.0pt">
+                <td class="xl12425086" id="cell-20-28" style="border-top:none"></td>
+                <td class="xl11225086" id="cell-20-29" style="border-top:none;border-left:none">--</td>
+                <td class="xl11225086" id="cell-20-30" style="border-top:none;border-left:none">Typ 'S' neu</td>
+                <td class="xl11225086" id="cell-20-31" style="border-top:none;border-left:none">Typ 'M' neu</td>
+                <td class="xl11225086" id="cell-20-32" style="border-top:none;border-left:none">Typ 'L' neu</td>
+                <td class="xl9625086" id="cell-20-33"></td>
+                </tr>
+                <tr height="19" style="mso-height-source:userset;height:14.45pt">
+                <td class="xl12425086" id="cell-21-28" style="border-top:none"></td>
+                <td class="xl11225086" id="cell-21-29" style="border-top:none;border-left:none">--</td>
+                <td class="xl11225086" id="cell-21-30" style="border-top:none;border-left:none">Typ 'S' neu</td>
+                <td class="xl11225086" id="cell-21-31" style="border-top:none;border-left:none">Typ 'M' neu</td>
+                <td class="xl11225086" id="cell-21-32" style="border-top:none;border-left:none">Typ 'L' neu</td>
+                <td class="xl9625086" id="cell-21-33"></td>
+                </tr>
+                <tr height="19" style="height:14.25pt">
+                <td class="xl7825086" id="cell-22-28"></td>
+                <td class="xl7825086" id="cell-22-29"></td>
+                <td class="xl7825086" id="cell-22-30"></td>
+                <td class="xl7825086" id="cell-22-31"></td>
+                <td class="xl7825086" id="cell-22-32"></td>
+                <td class="xl9625086" id="cell-22-33"></td>
+                </tr>
+                <tr height="19" style="height:14.25pt">
+                <td class="xl12625086" colspan="2" id="cell-23-28" style="border-right:.5pt solid white">Liefermenge:
+                  Sondermarkt</td>
+                <td align="right" class="xl12725086" id="cell-23-29" style="border-left:none">8.000</td>
+                <td class="xl7825086" id="cell-23-30"></td>
+                <td class="xl7825086" id="cell-23-31"></td>
+                <td class="xl9625086" id="cell-23-32"></td>
+                </tr>>
+                <tr height="31" style="mso-height-source:userset;height:23.85pt">
+                <td class="xl7825086" id="cell-24-28"></td>
+                <td class="xl7825086" id="cell-24-29"></td>
+                <td class="xl7825086" id="cell-24-30"></td>
+                <td class="xl7825086" id="cell-24-31"></td>
+                <td class="xl7825086" id="cell-24-32"></td>
+                <td class="xl9625086" id="cell-24-33"></td>
+                </tr>
+                <tr height="19" style="height:14.25pt">
+                <td class="xl7825086" id="cell-25-28"></td>
+                <td class="xl7825086" id="cell-25-29"></td>
+                <td class="xl7825086" id="cell-25-30"></td>
+                <td class="xl7825086" id="cell-25-31"></td>
+                <td class="xl7825086" id="cell-25-32"></td>
+                <td class="xl9625086" id="cell-25-33"></td>
+                </tr>
+                <tr height="19" style="height:14.25pt">
+                    <td class="xl12625086" colspan="2" id="cell-26-28" style="border-right:.5pt solid white">Branchen-/Marktberichte
+                    ?</td>
+                    <td class="xl11225086" id="cell-26-29" style="border-left:none">Ja</td>
+                    <td class="xl11225086" id="cell-26-30" style="border-left:none">Nein</td>
+                    <td class="xl7825086" id="cell-26-31"></td>
+                    <td class="xl9625086" id="cell-26-32"></td>
+                </tr>
+                <tr height="19" style="height:14.25pt">
+                    <td class="xl7825086" id="cell-27-28"></td>
+                    <td class="xl7825086" id="cell-27-29"></td>
+                    <td class="xl7825086" id="cell-27-30"></td>
+                    <td class="xl7825086" id="cell-27-31"></td>
+                    <td class="xl7825086" id="cell-27-32"></td>
+                    <td class="xl9625086" id="cell-27-33"></td>
+                </tr>
+                <tr height="19" style="height:14.25pt">
+                    <td class="xl12625086" colspan="2" id="cell-28-28" style="border-right:.5pt solid white">Gehaltsaufschlag<span style="mso-spacerun:yes"> </span>(freiwilli<span style="display:none">g)</span></td>
+                    <td align="right" class="xl13125086" id="cell-28-29">0,5</td>
+                    <td class="xl7825086" id="cell-28-30"></td>
+                    <td class="xl7825086" id="cell-28-31"></td>
+                    <td class="xl9625086" id="cell-28-32"></td>
+                </tr>
+        </tbody>
+    </table>
+
+    <script src="script.js"></script>
+</body>
+</html>
