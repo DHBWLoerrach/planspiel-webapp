@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>first table</title>
+    <title>Player View</title>
     <!-- Add Select2 CSS -->
     <link href="https://cdn.jsdelivr.net/npm/select2/dist/css/select2.min.css" rel="stylesheet" />
     <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500&display=swap" rel="stylesheet">
@@ -530,7 +530,7 @@
                                 <td></td>
                                 <td></td>
                                 <td>
-                                    <select id="selectSolidBranchenbericht">
+                                    <select id="selectBranchenbericht">
                                         <option value="Ja">Ja</option>
                                         <option value="Nein">Nein</option>
                                     </select>
@@ -644,6 +644,8 @@
         window.onload = function() {
             // Retrieve the stored login name
             var loginName = localStorage.getItem('login_name');
+
+            checkLockStatus(); // Check if the game is locked
 
             // Check if loginName exists and then set it
             if(loginName) {
@@ -761,6 +763,7 @@
         function selectGame(game) {
             localStorage.setItem('selectedGame', JSON.stringify(game));
             document.getElementById('period').textContent = game.current_period;
+            localStorage.setItem('currentGame',JSON.stringify(game));
         }
 
         function initializeInputListeners() {
@@ -806,9 +809,11 @@
         }
 
         function submitFormData() {
+            const currentGameObject = JSON.parse(localStorage.getItem('currentGame'))
             const data = {
                 teamname: localStorage.getItem('login_name'),
-                game_id: localStorage.getItem('selectedGameId'),
+                game_id: currentGameObject.id,
+                turn_number: currentGameObject.current_period,
                 inputSolidVerkaufspreisInland: document.getElementById('inputSolidVerkaufspreisInland').value,
                 inputIdealVerkaufspreisInland: document.getElementById('inputIdealVerkaufspreisInland').value,
                 inputSolidVerkaufspreisAusland: document.getElementById('inputSolidVerkaufspreisAusland').value,
@@ -839,7 +844,6 @@
                 inputPersonalentwicklung: document.getElementById('inputPersonalentwicklung').value,
                 inputGehaltsaufschlag: document.getElementById('inputGehaltsaufschlag').value,
                 inputInvestitionenBGA: document.getElementById('inputInvestitionenBGA').value,
-                sumVerkaufspreisAusland: document.getElementById('sumVerkaufspreisAusland').value,
                 sumFETechnik: document.getElementById('sumFETechnik').value,
                 sumFEHaptik: document.getElementById('sumFEHaptik').value,
                 sumProduktbewerbungInland: document.getElementById('sumProduktbewerbungInland').value,
@@ -858,7 +862,7 @@
                 gesamtInvestitionenBGA: document.getElementById('gesamtInvestitionenBGA').value,
             };
 
-            fetch('/submit-turn', {
+            fetch('http://127.0.0.1:5000/submit-turn', {
                 method: 'POST',
                 game_id: localStorage.getItem('selectedGameId'),
                 headers: {
@@ -869,10 +873,50 @@
             })
             .then(response => response.json())
             .then(data => {
-                console.log('Success:', data);
-                // Handle successful submission
+                lockTeam();
             })
             .catch(error => console.error('Error:', error));
+        }
+
+        function lockTeam() {
+            const currentGameObject = JSON.parse(localStorage.getItem('currentGame'))
+            fetch('http://127.0.0.1:5000/lock-team', { // Replace '/lock-team' with your actual endpoint for locking
+                method: 'POST',
+                headers: {
+                    'Authorization': `Bearer ${localStorage.getItem('access_token')}`,
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({
+                    game_id: currentGameObject.id,
+                    team_name: localStorage.getItem('login_name'),
+                })
+            })
+            .then(response => response.json())
+            .then(data => {
+            })
+            .catch(error => {
+                console.error('Error in locking team:', error);
+            });
+        }
+
+        function checkLockStatus() {
+            const currentGameObject = JSON.parse(localStorage.getItem('currentGame'))
+            fetch('http://127.0.0.1:5000/check-lock-status?teamname=' + localStorage.getItem('login_name') + '&game_id=' + currentGameObject.id, {
+                method: 'GET',
+                headers: {
+                    'Authorization': `Bearer ${localStorage.getItem('access_token')}`,
+                }
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.locked) {
+                    alert("Please wait for the next period.");
+                    window.location.href = 'index.htm';  // Redirect to index.html
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+            });
         }
     </script>
 </body>

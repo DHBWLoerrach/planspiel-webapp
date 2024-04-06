@@ -1,5 +1,8 @@
 from flask import Flask, request, jsonify, send_from_directory, send_file
 from flask_sqlalchemy import SQLAlchemy
+from sqlalchemy import text
+from sqlalchemy.sql import func
+from sqlalchemy.exc import SQLAlchemyError
 from flask_marshmallow import Marshmallow
 from flask_jwt_extended import JWTManager, create_access_token, jwt_required, get_jwt_identity
 import os
@@ -50,7 +53,6 @@ class TeamSchema(ma.Schema):
 team_schema = TeamSchema()
 teams_schema = TeamSchema(many=True)
 
-
 # Game Model/Schema
 class Game(db.Model):
     __tablename__ = 'games'
@@ -74,6 +76,7 @@ class Game(db.Model):
     # Relationships
     teams = db.relationship('Team', secondary=GameTeamAssociation, lazy='subquery',
                             backref=db.backref('games', lazy=True))
+    turns = db.relationship('Turn', back_populates='game')
 
 
 class GameSchema(ma.Schema):
@@ -85,10 +88,63 @@ games_schema = GameSchema(many=True)
 
 # Turn Model/Schema
 class Turn(db.Model):
+    __tablename__ = 'turns'
+
     id = db.Column(db.Integer, primary_key=True)
-    game_id = db.Column(db.Integer, db.ForeignKey('game.id'))
-    turn_number = db.Column(db.Integer)
-    submission_time = db.Column(db.DateTime, default=datetime.utcnow)
+    game_id = db.Column(db.Integer, db.ForeignKey('games.id'), nullable=False)
+    turn_number = db.Column(db.Integer, nullable=False)
+    submission_time = db.Column(db.DateTime, default=func.current_timestamp())
+    team_name = db.Column(db.String(100), db.ForeignKey('teams.name'))
+    inputSolidVerkaufspreisInland = db.Column(db.Float)
+    inputIdealVerkaufspreisInland = db.Column(db.Float)
+    inputSolidVerkaufspreisAusland = db.Column(db.Float)
+    inputIdealVerkaufspreisAusland = db.Column(db.Float)
+    inputSolidFETechnik = db.Column(db.Float)
+    inputIdealFETechnik = db.Column(db.Float)
+    inputSolidFEHaptik = db.Column(db.Float)
+    inputIdealFEHaptik = db.Column(db.Float)
+    inputSolidProduktwerbungInland = db.Column(db.Float)
+    inputIdealProduktwerbungInland = db.Column(db.Float)
+    inputSolidProduktwerbungAusland = db.Column(db.Float)
+    inputIdealProduktwerbungAusland = db.Column(db.Float)
+    inputSolidPR = db.Column(db.Float)
+    inputIdealPR = db.Column(db.Float)
+    inputSolidLiefermengeSondermarkt = db.Column(db.Float)
+    inputIdealLiefermengeSondermarkt = db.Column(db.Float)
+    inputSolidLiefermengeAusland = db.Column(db.Float)
+    inputIdealLiefermengeAusland = db.Column(db.Float)
+    inputSolidVertriebspersonalInland = db.Column(db.Float)
+    inputIdealVertriebspersonalInland = db.Column(db.Float)
+    inputSolidVertriebspersonalAusland = db.Column(db.Float)
+    inputIdealVertriebspersonalAusland = db.Column(db.Float)
+    inputSolidHilfsstoffe = db.Column(db.Float)
+    inputIdealHilfsstoffe = db.Column(db.Float)
+    inputSolidMaterialS = db.Column(db.Float)
+    inputMaterialI = db.Column(db.Float)
+    inputFertigungspersonal = db.Column(db.Float)
+    inputPersonalentwicklung = db.Column(db.Float)
+    inputGehaltsaufschlag = db.Column(db.Float)
+    inputInvestitionenBGA = db.Column(db.Float)
+    sumFETechnik = db.Column(db.Float)
+    sumFEHaptik = db.Column(db.Float)
+    sumProduktbewerbungInland = db.Column(db.Float)
+    sumProduktbewerbungAusland = db.Column(db.Float)
+    sumPR = db.Column(db.Float)
+    sumLiefermengeSondermarkt = db.Column(db.Float)
+    sumLiefermengeAusland = db.Column(db.Float)
+    sumVertriebspersonalInland = db.Column(db.Float)
+    sumVertriebspersonalAusland = db.Column(db.Float)
+    sumBetriebsstoffe = db.Column(db.Float)
+    sumMaterialS = db.Column(db.Float)
+    sumMaterialI = db.Column(db.Float)
+    gesamtFertigungspersonal = db.Column(db.Float)
+    gesamtPersonalentwicklung = db.Column(db.Float)
+    gesamtGehaltsaufschlag = db.Column(db.Float)
+    gesamtInvestitionenBGA = db.Column(db.Float)
+    is_template = db.Column(db.Boolean, default=False, nullable=False)
+
+    # Define the relationship with the Game model
+    game = db.relationship('Game', back_populates='turns')
 
 class TurnSchema(ma.Schema):
     class Meta:
@@ -118,7 +174,6 @@ def login():
     team = Team.query.filter_by(name=name).first()
     if team and team.password == password:
         access_token = create_access_token(identity=name)
-        print(access_token)
         is_gamemaster = name.lower() == "gamemaster"
         return jsonify(access_token=access_token, is_gamemaster=is_gamemaster), 200
 
@@ -286,7 +341,6 @@ def delete_team(team_name):
 @jwt_required()
 def change_team_password(team_name):
     team = Team.query.filter_by(name=team_name).first_or_404()
-    print(team)
 
     # Extract new password from the request
     new_password = request.json.get('password', None)
@@ -338,7 +392,6 @@ def save_file():
 def get_games_for_team():
     current_user = get_jwt_identity()
     team = Team.query.filter_by(name=current_user).first()
-    print(current_user, team)
     if team:
         games = Game.query.filter(Game.teams.any(name=team.name)).all()
         return jsonify(games_schema.dump(games))
@@ -363,6 +416,34 @@ def check_lock_status():
         return jsonify({'message': 'Game or team not found'}), 404
 
 
+@app.route('/lock-team', methods=['POST'])
+@jwt_required()
+def lock_team():
+    team_name = request.json.get('team_name')
+    game_id = request.json.get('game_id')
+
+    try:
+        sql = text("UPDATE gameteams SET locked = 1 WHERE game_id = :game_id AND teams_name = :team_name")
+        with db.engine.begin() as connection:  # This ensures a transaction is begun and committed
+            connection.execute(sql, {'game_id': game_id, 'team_name': team_name})
+
+        return jsonify({'message': 'Team locked successfully'}), 200
+    except SQLAlchemyError as e:
+        print(f"SQLAlchemyError: {e}")  # Log the error
+        return jsonify({'error': 'Database update failed'}), 500
+
+@app.route('/unlock-team', methods=['POST'])
+@jwt_required()
+def unlock_team():
+    team_name = request.json.get('team_name')
+    game_id = request.json.get('game_id')
+
+    sql = text("UPDATE gameteams SET locked = 0 WHERE game_id = :game_id AND teams_name = :team_name")
+    with db.engine.connect() as connection:
+        connection.execute(sql, {'game_id': game_id, 'team_name': team_name})
+
+    return jsonify({'message': 'Team unlocked successfully'}), 200
+
 @app.route('/submit-turn', methods=['POST'])
 @jwt_required()
 def submit_turn():
@@ -380,6 +461,7 @@ def submit_turn():
 
     new_turn = Turn(
         game_id=game_id,
+        turn_number=request.json.get('turn_number'),
         team_name=current_team,
         inputSolidVerkaufspreisAusland=request.json.get('inputSolidVerkaufspreisAusland'),
         inputIdealVerkaufspreisAusland=request.json.get('inputIdealVerkaufspreisAusland'),
@@ -411,7 +493,6 @@ def submit_turn():
         inputPersonalentwicklung=request.json.get('inputPersonalentwicklung'),
         inputGehaltsaufschlag=request.json.get('inputGehaltsaufschlag'),
         inputInvestitionenBGA=request.json.get('inputInvestitionenBGA'),
-        sumVerkaufspreisAusland=request.json.get('sumVerkaufspreisAusland'),
         sumFETechnik=request.json.get('sumFETechnik'),
         sumFEHaptik=request.json.get('sumFEHaptik'),
         sumProduktbewerbungInland=request.json.get('sumProduktbewerbungInland'),

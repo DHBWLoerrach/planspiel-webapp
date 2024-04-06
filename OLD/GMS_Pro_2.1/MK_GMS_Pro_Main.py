@@ -1,136 +1,57 @@
-#--------##--------##--------##--------##--------##--------##--------##--------#
-# General Management Simulation MK_GMS_Pro
-# Hauptprogramm: Unternehmenssimulation
-#                Berichtsdateien
-#--------##--------##--------##--------##--------##--------##--------##--------#
-
-#--------##--------##--------##--------##--------##--------##--------##--------#
-# Simulationsumgebung
-#--------##--------##--------##--------##--------##--------##--------##--------#
-# IPython magic commands
 from IPython import get_ipython
 get_ipython().run_line_magic('clear','')
 get_ipython().run_line_magic('reset', '-f')
-# get_ipython().run_line_magic('precision', '%.4f')
-
-#-- simulierte Periode
 PERIOD = 0
-
-#-- Name des Planspiels
 GMS_NAME      = 'Pro021'
-# GMS_NAME      = 'WPM21B'
-
-#-- Version des Planspiels
 GMS_VERSION   = 'GMS_Pro_2.1'
-
-#-- Setup-Datei
 SETUP_FILE    = 'MK_GMS_Pro-Setup.npz'
-
-#-- Haupt-Verzeichnis des Planspiels
-# MAIN_DIR      = 'C:/Users/MKalt/Documents/!PlanSpiele/'
 MAIN_DIR      = 'C:/Users/Ich/Documents/!1 Vorlesungen/!PlanSpiele/'
-#-- Unter-Verzeichnis für Planspiel-Ressourcen
 SUB_DIR       = '!GMS_Versions'
-#-- Unter-Verzeichnis für Planspiel-Szenario
 SCEN_DIR      = 'Szenario'
-#-- Ziel-Verzeichnis für Planspiel-Dateien
 GMS_DIR       = '!GMS_Ordner'
-
-#-- Planspiel-Verzeichnis
 GMS_directory = MAIN_DIR + GMS_DIR + '/' + GMS_NAME+'/'
 print('Planspiel-Verzeichnis')
 print(GMS_directory)
-
-#--------##--------##--------##--------#
-#-- Lade Packages/Libraries/Module
 import sys
 version_dir = MAIN_DIR + SUB_DIR + '/' + GMS_VERSION + '/'
 print(version_dir)
 sys.path.append(version_dir)
-
 import time
-
 from openpyxl import load_workbook
 import xlwings            as xw
-
 import numpy              as np
-
 import MK_GMS_Pro_Modules as mod
-
 np.set_printoptions(precision=4, suppress=True)
-
-#--------##--------##--------##--------#
-#-- Notiere Startzeit
 start_time = time.time()
-
-#--------##--------##--------##--------#
-#-- Lade Setup-Daten
 with np.load(GMS_directory + SETUP_FILE) as setup:
     gms_numbers = setup['gms_numbers']
     gms_files   = setup['gms_files']
 del(setup)
-
-#--------##--------##--------##--------#
-#-- KONSTANTEN
-#---- Anzahl Unternehmen
 NUM_COMPANIES  = gms_numbers[0]
 num_companies0 = NUM_COMPANIES
-
-#---- Anzahl Perioden
-# MAX_PERIODS    = 10
 NUM_PERIODS    = gms_numbers[1]
-#---- Perioden-Vorlauf
 OFFSET         = gms_numbers[2]
-
-#---- Anzahl Märkte
-# Markt 0: SOLID - Inland
-# Markt 1: SOLID - Ausland
-# Markt 2: IDEAL - Inland
-# Markt 3: IDEAL - Ausland
 NUM_MARKETS    = gms_numbers[3]
-#---- Periode der Marktaktivierung
 MARKET_0       = gms_numbers[4]
 MARKET_1       = gms_numbers[5]
 IDEAL_RD       = gms_numbers[8]
 MARKET_2       = gms_numbers[6]
 MARKET_3       = gms_numbers[7]
-
-#---- Anzahl Werkstätten (production cells) für Maschinen
 NUM_CELLS      = gms_numbers[9]
-#---- bilanzielle Nutzungsdauer (useful life) der Werkstätten-Plätze (cells)
 UL_CELLS       = gms_numbers[10]
-
-#---- Kosten für Branchen- und Marktberichte
 COST_INDUSTRY_REPORT = gms_numbers[11]
 COST_MARKET_REPORT   = gms_numbers[12]
 del(gms_numbers)
-
-#--------##--------##--------##--------#
-#-- Verzeichnisse
-#---- Szenario-Verzeichnis
 scenario_dir  = version_dir + SCEN_DIR + '/'
-
-#---- zentrales Entscheidungs-Verzeichnis
 decision_dir  = GMS_directory + 'Decisions/'
-
-#---- Unter-Verzeichnisse des Planspiels für jedes Unternehmen
 company_dir = []
 for co in range(NUM_COMPANIES):
     company_dir.append(GMS_directory+f'U{co+1:0>2d}/')
-
-#--------##--------##--------##--------#
-#-- Dateien
-#---- Szenario-Datei
 SCENARIO_FILE    = gms_files[0]
-#---- Unternehmens-Datei
 COMPANY_FILE     = gms_files[1]
-#-- Informations-Master-Datei (Konjunktur- und Marktberichte)
 INFO_FILE        = gms_files[2]
-# Informations-Master-Datei der aktuellen Periode
 info_period_file = f'MK_GMS_Pro-Informationen-P{PERIOD:0>2d}.xlsx'
 del(gms_files)
-
-#---- Entscheidungs-, Berichts- und Informations-Dateien für alle Unternehmen
 decision_template = 'Entscheidungen-P00-U01.xlsx'
 decision_files = []
 decision_files_new = []
@@ -148,94 +69,42 @@ for co in range(NUM_COMPANIES):
         f'Berichte-P{PERIOD:0>2d}-U{co+1:0>2d}.xlsx')
     info_files.append(
         f'Informationen-P{PERIOD:0>2d}-U{co+1:0>2d}.xlsx')
-
 if (PERIOD == 0):
     report_files_old = ['Berichte-P(-01)-U01.xlsx']
     NUM_COMPANIES = 1
-
-#--------##--------##--------##--------#
-#-- Variablen
-#---- aktuelle Nachfrage-/Angebots- und Absatzzahlen
 prod_demand = np.zeros((NUM_MARKETS, num_companies0), dtype=int)
 prod_supply = np.zeros((NUM_MARKETS, num_companies0), dtype=int)
 sales_cur   = np.zeros((NUM_MARKETS, num_companies0), dtype=int)
 del(NUM_MARKETS)
-
-#-- Entscheidungs-Variablen
-#---- Excel Zellen der Marketing-Entscheidungen
-# mDec_SOLID:  Preis Inland, Preis Ausland, Technik, Haptik,
-#              Werbung Inland, Werbung Ausland, Liefermenge Ausland,
-#              Marktbericht, Liefermenge Sondermarkt
 mDec_SOLID_cell  = ('D6' , 'D7' , 'D10', 'D11',
                     'D14', 'D15', 'D20',
                     'D27', 'D19')
-
-# mDec_IDEAL:  Preis Inland, Preis Ausland, Technik, Haptik,
-#              Werbung Inland, Werbung Ausland, Liefermenge Ausland,
-#              Marktbericht
 mDec_IDEAL_cell  = ('E6' , 'E7' , 'E10', 'E11',
                     'E14', 'E15', 'E20',
                     'E27')
-
-# mDec_GESAMT: PR, Vertriebspersonal Inland/Ausland, Branchenbericht
 mDec_GESAMT_cell = ('F16', 'F21', 'F22', 'F26')
-
-#---- Initialisiere Marketing-Entscheidungen
 mDec_SOLID       = np.zeros((len(mDec_SOLID_cell) , NUM_COMPANIES), dtype=int)
 mDec_IDEAL       = np.zeros((len(mDec_IDEAL_cell) , NUM_COMPANIES), dtype=int)
 mDec_GESAMT      = np.zeros((len(mDec_GESAMT_cell), NUM_COMPANIES), dtype=int)
-
-#---- Excel Zellen der Fertigungs-(Produktions-)/Personal-Entscheidungen
-# pDec_SOLID:  Fertigungsplan, Hilfsstoffe 'H', Vorprodukt 'S'
-pDec_SOLID_cell  = ('J6' , 'J9' , 'J10') 
-
-# pDec_IDEAL:  Fertigungsplan, Hilfsstoffe 'H', Vorprodukt 'I'
+pDec_SOLID_cell  = ('J6' , 'J9' , 'J10')
 pDec_IDEAL_cell  = ('K6' , 'K9' , 'K11')
-
-# pAll_TA:     alte und neue Belegung (allocation) der Werkstätten für Technische Anlagen
 pAll_TA_neu_cell = ('J14', 'J21')
 pAll_TA_alt_cell = ('K14', 'K21')
-
-# pDec_HR:     Fertigungspersonal, Personalentwicklung,
-#              Gehaltsaufschlag, Investitionen in BGA
 pDec_HR_cell     = ('L26', 'L27',
                     'L28', 'L29')
-
-#---- Initialisiere Fertigungs(Produktions)-/Personal-Entscheidungen
 pDec_SOLID       = np.zeros((len(pDec_SOLID_cell) , NUM_COMPANIES), dtype=int)
 pDec_IDEAL       = np.zeros((len(pDec_IDEAL_cell) , NUM_COMPANIES), dtype=int)
 pDec_HR          = np.zeros((len(pDec_HR_cell)    , NUM_COMPANIES))
-
-#---- Initialisiere Hilfs-Variablen für Fertigungs-Entscheidungen
-#                                       (Technische Anlagen/Werkstätten)
-# pAll_TA_inv:   Investition in neue Werkstätte (0/1)
-# pAll_TA_sell:  Verkauf der (alten) Maschine in Werkstätte (0/1)
-# pAll_TA_buy:   Kauf einer neuen Maschine für Werkstätte (0/1/2/3)
 pAll_TA_neu      = np.empty((NUM_CELLS, NUM_COMPANIES), dtype=object)
 pAll_TA_alt      = np.empty((NUM_CELLS, NUM_COMPANIES), dtype=object)
 pAll_TA_inv      = np.zeros((NUM_CELLS, NUM_COMPANIES), dtype=int)
 pAll_TA_sell     = np.zeros((NUM_CELLS, NUM_COMPANIES), dtype=int)
 pAll_TA_buy      = np.zeros((NUM_CELLS, NUM_COMPANIES), dtype=int)
-
-#---- Excel Zellen der Finanz(Geld-)-Entscheidungen
-# fDec_FIN:    'S'-Darlehen, 'M'-Darlehen, 'L'-Darlehen,
-#              Festgeld, Dividende
 fDec_FIN_cell    = ('P6' , 'P7' , 'P8' , 'P11', 'P12')
-
-#---- Initialisiere Finanz(Geld-)-Entscheidungen
 fDec_FIN  = np.zeros((len(fDec_FIN_cell), NUM_COMPANIES), dtype=int)
-
 print('')
 print(f'Simuliere Periode {PERIOD:0>1d}')
-
-
-#--------##--------##--------##--------##--------##--------##--------##--------#
-# Lade Szenario-, Unternehmens-Daten und Informations-Master-Datei
-#--------##--------##--------##--------##--------##--------##--------##--------#
 szenario = dict(np.load(GMS_directory + SCENARIO_FILE, allow_pickle=True))
-# for key in szenario:
-#     print(szenario[key])
-
 with np.load(GMS_directory + COMPANY_FILE, allow_pickle=True) as co_file:
     mDec_SOLID_h  = co_file['mDec_SOLID']
     mDec_IDEAL_h  = co_file['mDec_IDEAL']
@@ -253,39 +122,24 @@ with np.load(GMS_directory + COMPANY_FILE, allow_pickle=True) as co_file:
     fDec_FIN_h    = co_file['fDec_FIN']
     fRes_COMP_h   = co_file['fRes_COMP']
 del(co_file)
-
 info_period_WB  = load_workbook(filename = scenario_dir + INFO_FILE)
-
-
-#--------##--------##--------##--------##--------##--------##--------##--------#
-# Neue Informations-Datei der Periode (kopiere und aktualisiere alte Berichtsvorlagen)
-#--------##--------##--------##--------##--------##--------##--------##--------#
-# Aktualisiere Datenkranz
-# Übertrage Werte der Vorperiode alten Endsituation in neue Ausgangssituation
-
-#-- Worksheet: 'Aktuelle Wirtschaftsdaten'
 info_period_WS  = info_period_WB['Aktuelle Wirtschaftsdaten']
-
 szenario_tuple = ('PreisHStoff', 'PreisMat1', 'PreisMat2', 'LagerMat',
                   'Zinsen', 'Finanzen',
                   'Gehalt', 'LohnNK', 'BedarfSOLID', 'BedarfIDEAL', 'AV_GG',
                   'AnlagenS', 'AnlagenM', 'AnlagenL',
                   'Sondermarkt', 'TransportFE', 'LagerFE')
-
-# Aktualisiere Szenario-Werte der aktuellen Periode
 write_range = (('D6' , 'D10' ),
                ('D12', 'D17'),
                ('D19', 'D24'),
                ('D26', 'D28'),
                ('D33', 'D38'),
                ('D40', 'D42'),
-
                ('I6',  'I8' ),
                ('I10', 'I18'),
                ('I23', 'I26'),
                ('I28', 'I31'),
                ('I36', 'I38'),
-
                ('N6',  'N11' ),
                ('N13', 'N18'),
                ('N20', 'N25'),
@@ -297,21 +151,17 @@ for ndx in range(len(write_range)):
         write_range[ndx],
         szenario[szenario_tuple[ndx]][:, PERIOD+OFFSET+1],
         info_period_WS)
-
-# Aktualisiere Szenario-Werte der Vorperiode
 write_range = (('E6' , 'E10' ),
                ('E12', 'E17'),
                ('E19', 'E24'),
                ('E26', 'E28'),
                ('E33', 'E38'),
                ('E40', 'E42'),
-
                ('J6',  'J8' ),
                ('J10', 'J18'),
                ('J23', 'J26'),
                ('J28', 'J31'),
                ('J36', 'J38'),
-
                ('O6',  'O11' ),
                ('O13', 'O18'),
                ('O20', 'O25'),
@@ -323,42 +173,24 @@ for ndx in range(len(write_range)):
         write_range[ndx],
         szenario[szenario_tuple[ndx]][:, PERIOD+OFFSET],
         info_period_WS)
-
-# Aktualisiere einzelne Excel-Zellen
 info_period_WS['O1'].value   = num_companies0
 info_period_WS['O2'].value   = PERIOD
 info_period_WS['I41'].value  = szenario['AV_BGA'][PERIOD+OFFSET+1]
 info_period_WS['J41'].value  = szenario['AV_BGA'][PERIOD+OFFSET]
-
-# Lösche Konjunkturberichte der falschen Perioden
 for per in range(NUM_PERIODS+1):
     if per != PERIOD:
         info_period_WS = info_period_WB[f'KonjunkturAusblick P{per+1:0>2d}']
         info_period_WB.remove(info_period_WS)
 del(per)
-        
-# Lösche Marktbericht IDEAL bis Markteintritt
 if PERIOD < MARKET_2:
     info_period_WS = info_period_WB['Marktbericht IDEAL']
     info_period_WB.remove(info_period_WS)
-
-#--------##--------##--------##--------#
-#-- 1. Zwischenzeit
 mean_time = time.time()
 print('')
 print('Setup')
 print(round(mean_time - start_time, 1), f'({mean_time - start_time:.1f})')
 mean_time0 = mean_time
-
-
-#--------##--------##--------##--------##--------##--------##--------##--------#
-#--------#  1. Schleife über alle Unternehmen     #--------##--------##--------#
-#--------##--------##--------##--------##--------##--------##--------##--------#
 for co in range(NUM_COMPANIES):
-    #--------##--------##--------##--------##--------##--------##--------#
-    # Entscheidungs-Dateien (lese und aktualisiere Entscheidungs-Datei
-    #--------##--------##--------##--------##--------##--------##--------#
-    # Lade aktuelle Entscheidungs-Datei (openpyxl) im Read-Only-Modus
     if (PERIOD == 0):
         decisionWB_read  = load_workbook(
             filename = scenario_dir + decision_files[co],
@@ -367,97 +199,60 @@ for co in range(NUM_COMPANIES):
         decisionWB_read  = load_workbook(
             filename = decision_dir + decision_files[co],
             data_only=True)
-    
-    # Lade Entscheidungs-Template als Vorlage für neue Entscheidungs-Datei
     decisionWB_write = load_workbook(
         filename = scenario_dir + decision_template)
-
-    # Aktiviere Worksheet: 'Entscheidungen'
     decisionWS_read  = decisionWB_read['Entscheidungen']
     decisionWS_write = decisionWB_write['Entscheidungen']
-
-    #--------##--------##--------##--------#
-    # Lese Entscheidungen
-    #-- Marketing-Entscheidungen SOLID
     cell_values = mod.read_XLS_cells(mDec_SOLID_cell, decisionWS_read)
     cell_values = [x if x is not None else 0 for x in cell_values]
-    #---- Übertrage Werte in neue Entscheidungs-Datei
     mod.write_XLS_cells(mDec_SOLID_cell, cell_values, decisionWS_write)
-    #---- konvertiere Entscheidungen in numerischen np.array
     if (cell_values[7] == 'Ja'):
         cell_values[7] = 1
     else:
         cell_values[7] = 0
     mDec_SOLID[:, co] = np.array(cell_values)
-    # Sondermarkt-Entscheidungen (sicherheitshalber) eingrenzen
     mDec_SOLID[8, co] = min(mDec_SOLID[8, co],
                             szenario['Sondermarkt'][1, PERIOD+OFFSET])
-    # Auslandsentscheidungen (sicherheitshalber) auf Null setzen
     if PERIOD<MARKET_1:
         mDec_SOLID[[1, 5, 6]] = 0
-
-    #-- Marketing-Entscheidungen IDEAL
     cell_values = mod.read_XLS_cells(mDec_IDEAL_cell, decisionWS_read)
     cell_values = [x if x is not None else 0 for x in cell_values]
-    #---- Übertrage Werte in neue Entscheidungs-Datei
     mod.write_XLS_cells(mDec_IDEAL_cell, cell_values, decisionWS_write)
-    #---- konvertiere Entscheidungen in numerischen np.array
     if (cell_values[7] == 'Ja'):
         cell_values[7] = 1
     else:
         cell_values[7] = 0
     mDec_IDEAL[:, co] = np.array(cell_values)
-    # F&E-Entscheidungen (sicherheitshalber) auf Null setzen
     if PERIOD<IDEAL_RD:
         mDec_IDEAL[[2, 3]] = 0
-    # Inlandsentscheidungen (sicherheitshalber) auf Null setzen
     if PERIOD<MARKET_2:
         mDec_IDEAL[[0, 4, 7]] = 0
-    # Auslandsentscheidungen (sicherheitshalber) auf Null setzen
     if PERIOD<MARKET_3:
         mDec_IDEAL[[1, 5, 6]] = 0
-
-    #-- Marketing-Entscheidungen GESAMT
     cell_values = mod.read_XLS_cells(mDec_GESAMT_cell, decisionWS_read)
     cell_values = [x if x is not None else 0 for x in cell_values]
-    #---- Übertrage Werte in neue Entscheidungs-Datei
     mod.write_XLS_cells(mDec_GESAMT_cell, cell_values, decisionWS_write)
-    #---- konvertiere Entscheidungen in numerischen np.array
     if (cell_values[3] == 'Ja'):
         cell_values[3] = 1
     else:
         cell_values[3] = 0
     mDec_GESAMT[:, co] = np.array(cell_values)
-    # Auslandsentscheidungen (sicherheitshalber) auf Null setzen
     if PERIOD<MARKET_1:
         mDec_GESAMT[2] = 0
-    
-    #-- Fertigungs-/Produktions-Entscheidungen SOLID
     cell_values = mod.read_XLS_cells(pDec_SOLID_cell, decisionWS_read)
     cell_values = [x if x is not None else 0 for x in cell_values]
-    #---- Übertrage Werte in neue Entscheidungs-Datei
     mod.write_XLS_cells(pDec_SOLID_cell, cell_values, decisionWS_write)
-    #---- konvertiere Entscheidungen in numerischen np.array
     pDec_SOLID[:, co] = np.array(cell_values)
-
-    #-- Fertigungs-/Produktions-Entscheidungen IDEAL
     cell_values = mod.read_XLS_cells(pDec_IDEAL_cell, decisionWS_read)
     cell_values = [x if x is not None else 0 for x in cell_values]
-    #---- Übertrage Werte in neue Entscheidungs-Datei
     mod.write_XLS_cells(pDec_IDEAL_cell, cell_values, decisionWS_write)
-    #---- konvertiere Entscheidungen in numerischen np.array
     pDec_IDEAL[:, co] = np.array(cell_values)
-    # Inlandsentscheidungen (sicherheitshalber) auf Null setzen
     if PERIOD<MARKET_2:
         pDec_IDEAL[[0, 1, 2]] = 0
-
-    #-- Entscheidungen: Technische Anlagen neu / alt
     pAll_TA_neu[:, co] = mod.read_XLS_range(pAll_TA_neu_cell, decisionWS_read)
     pAll_TA_alt[:, co] = mod.read_XLS_range(pAll_TA_alt_cell, decisionWS_read)
-    #---- Übertrage Werte in neue Entscheidungs-Datei
     mod.write_XLS_range(pAll_TA_neu_cell, pAll_TA_neu[:, co], decisionWS_write)
     mod.write_XLS_range(pAll_TA_alt_cell, pAll_TA_neu[:, co], decisionWS_write)
-    #---- konvertiere Entscheidungen in numerischen np.arrays
     for col in range(NUM_CELLS):
         if (pAll_TA_neu[col, co] != pAll_TA_alt[col, co]):
             if (pAll_TA_alt[col, co] == None):
@@ -466,7 +261,6 @@ for co in range(NUM_COMPANIES):
                 pass
             else:
                 pAll_TA_sell[col, co] = 1
-            #
             if   (pAll_TA_neu[col, co] == "Typ 'S' neu"):
                 pAll_TA_buy[col, co] = 1
             elif (pAll_TA_neu[col, co] == "Typ 'M' neu"):
@@ -474,36 +268,22 @@ for co in range(NUM_COMPANIES):
             elif (pAll_TA_neu[col, co] == "Typ 'L' neu"):
                 pAll_TA_buy[col, co] = 3
     del(col)
-
-    #-- Personal-Entscheidungen
     cell_values = mod.read_XLS_cells(pDec_HR_cell, decisionWS_read)
     cell_values = [x if x is not None else 0 for x in cell_values]
-    #---- Übertrage Werte in neue Entscheidungs-Datei
     mod.write_XLS_cells(pDec_HR_cell, cell_values, decisionWS_write)
-    #---- konvertiere Entscheidungen in numerischen np.array
     pDec_HR[:, co] = np.array(cell_values)
-    # Gehalts-Entscheidungen in % umrechnen
     pDec_HR[2, co] = pDec_HR[2, co]/100
-    # Gehalts-Entscheidungen (sicherheitshalber) eingrenzen
     pDec_HR[2, co] = max(pDec_HR[2, co],
                          max(pDec_HR_h[2, co, PERIOD+OFFSET-1] - 0.01, 0))
-    
-    #-- Finanz/Geld-Entscheidungen
     cell_values = mod.read_XLS_cells(fDec_FIN_cell, decisionWS_read)
     cell_values = [x if x is not None else 0 for x in cell_values]
-    #---- Übertrage Werte in neue Entscheidungs-Datei
     mod.write_XLS_cells(fDec_FIN_cell, cell_values, decisionWS_write)
-    #---- konvertiere Entscheidungen in numerischen np.array
     if (cell_values[4] == None):
         cell_values[4] = 0
     fDec_FIN[:, co] = np.array(cell_values)
-
-    #-- Aktualisiere einzelne Excel-Zellen
     decisionWS_write['P2'].value   = PERIOD+1
     decisionWS_write['AD28'].value = decisionWS_read['L28'].value
     decisionWS_write['AD23'].value = szenario['Sondermarkt'][1, PERIOD+OFFSET+1]
-    
-    # Typen (Code) der Technischen Anlagen
     type_TA = [None,
             f"'S'({PERIOD:0>2d})", f"'M'({PERIOD:0>2d})", f"'L'({PERIOD:0>2d})"]
     for sl in range(NUM_CELLS):
@@ -514,46 +294,24 @@ for co in range(NUM_COMPANIES):
             decisionWS_write.cell(row=14+sl, column=11
                                   ).value = type_TA[pAll_TA_buy[sl, co]]
     del(sl)
-    
-    # Speichere als neue Entscheidungs-Datei
     decisionWB_write.save(filename = company_dir[co] + decision_files_new[co])
-
-    #--------##--------##--------##--------#
-    # Schließe Entscheidungs-Dateien
     decisionWB_read.close()
     decisionWB_write.close()
-
-    # Speichere Marketing-Entscheidungen in Unternehmens-Daten
     mDec_SOLID_h[:, co, PERIOD+OFFSET] = mDec_SOLID[:, co]
     mDec_IDEAL_h[:, co, PERIOD+OFFSET] = mDec_IDEAL[:, co]
     mDec_GESAMT_h[:, co, PERIOD+OFFSET] = mDec_GESAMT[:, co]
-
-    # Speichere Fertigungs-(Produktions-)/Personal-Entscheidungen in Unternehmens-Daten
     pDec_SOLID_h[0:3, co, PERIOD+OFFSET] = pDec_SOLID[:, co]
     pDec_IDEAL_h[0:3, co, PERIOD+OFFSET] = pDec_IDEAL[:, co]
     pDec_HR_h[0:4, co, PERIOD+OFFSET] = pDec_HR[:, co]
-
-    # Speichere Finanz(Geld-)-Entscheidungen
     fDec_FIN_h[0:5, co, PERIOD+OFFSET] = fDec_FIN[:, co]
-
-    #--------##--------##--------##--------##--------##--------##--------#
-    # Berichts-Dateien (kopiere und aktualisiere alte Berichts-Dateien)
-    #--------##--------##--------##--------##--------##--------##--------#
-    # Lade alte Berichts-Datei (openpyxl)
     if (PERIOD == 0):
         reportWB_read  = load_workbook(
             filename = scenario_dir + report_files_old[co])
     else:
         reportWB_read  = load_workbook(
             filename = company_dir[co] + report_files_old[co])
-        
-    # Speichere als neue Berichts-Datei (Kopie)
     reportWB_read.save(filename = company_dir[co] + report_files[co])
-
-    # Schließe alte Berichts-Datei
     reportWB_read.close()
-    
-    # Lade erneut alte Berichts-Datei im Read-Only-Modus
     if (PERIOD == 0):
         reportWB_read  = load_workbook(
             filename = scenario_dir + report_files_old[co],
@@ -562,24 +320,13 @@ for co in range(NUM_COMPANIES):
         reportWB_read  = load_workbook(
             filename = company_dir[co] + report_files_old[co],
             data_only=True)
-
-    # Lade neue Berichts-Datei
     reportWB_write = load_workbook(
         filename = company_dir[co] + report_files[co])
-    
-    #--------##--------##--------##--------#
-    # Übertrage Werte der alten Endsituation in neue Ausgangssituation
-    #--  Worksheet: 'GuV'
     reportWS_read  = reportWB_read['GuV']
     reportWS_write = reportWB_write['GuV']
-    
-    # Übertrage einzelne Excel-Zellen
     reportWS_write['C36'].value  = reportWS_read['C39'].value
-
-    #--  Worksheet: 'Bilanz'
     reportWS_read  = reportWB_read['Bilanz']
     reportWS_write = reportWB_write['Bilanz']
-    
     read_range  = (('D5' , 'D8' ),
                    ('D11', 'D15'),
                    ('I5',  'I8' ),
@@ -589,28 +336,17 @@ for co in range(NUM_COMPANIES):
                    ('J5',  'J8' ),
                    ('J11', 'J15'))
     for ndx in range(len(read_range)):
-        # Lese Werte
         cell_values = mod.read_XLS_range(read_range[ndx], reportWS_read)
-        # Schreibe Werte
         mod.write_XLS_range(write_range[ndx], cell_values, reportWS_write)
-    
-    #-- Worksheet: 'Personal'
     reportWS_read  = reportWB_read['Personal']
     reportWS_write = reportWB_write['Personal']
-    
     read_range  = ('D9', 'F9')
     write_range = ('D5', 'F5')
-    # Lese Werte
     cell_values = mod.read_XLS_range(read_range, reportWS_read)
-    # Schreibe Werte
     mod.write_XLS_range(write_range, cell_values, reportWS_write)
-    # Übertrage einzelne Excel-Zellen
     reportWS_write['F29'].value  = reportWS_read['F33'].value
-    
-    #-- Worksheet: 'Anlagevermögen'
-    reportWS_read  = reportWB_read['Anlagevermögen']
-    reportWS_write = reportWB_write['Anlagevermögen']
-    
+    reportWS_read  = reportWB_read['Anlagevermï¿½gen']
+    reportWS_write = reportWB_write['Anlagevermï¿½gen']
     read_range  = (( 'D15',  'D19'),
                    ( 'E15',  'E19'),
                    ( 'F15',  'F19'),
@@ -626,29 +362,19 @@ for co in range(NUM_COMPANIES):
                    ( 'X16',  'X25'),
                    ('AF16', 'AF20'))
     for ndx in range(len(read_range)):
-        # Lese Werte
         cell_values = mod.read_XLS_range(read_range[ndx], reportWS_read)
-        # Schreibe Werte
         mod.write_XLS_range(write_range[ndx], cell_values, reportWS_write)
-    
-    #-- Worksheet: 'Vorräte'
-    reportWS_read  = reportWB_read['Vorräte']
-    reportWS_write = reportWB_write['Vorräte']
-    
+    reportWS_read  = reportWB_read['Vorrï¿½te']
+    reportWS_write = reportWB_write['Vorrï¿½te']
     read_range  = (('C10', 'K10'),
                    ('C18', 'N18'))
     write_range = (('C6',  'K6'),
                    ('C14', 'N14'))
     for ndx in range(len(read_range)):
-        # Lese Werte
         cell_values = mod.read_XLS_range(read_range[ndx], reportWS_read)
-        # Schreibe Werte
         mod.write_XLS_range(write_range[ndx], cell_values, reportWS_write)
-    
-    #-- Worksheet: 'Finanzwerte'
     reportWS_read  = reportWB_read['Finanzwerte']
     reportWS_write = reportWB_write['Finanzwerte']
-    
     read_range  = (('C17', 'D17'),
                    ('K17', 'L17'),
                    ('O17', 'O21'),
@@ -662,40 +388,30 @@ for co in range(NUM_COMPANIES):
                    ('S18', 'S27'),
                    ('T18', 'T27'))
     for ndx in range(len(read_range)):
-        # Lese Werte
         cell_values = mod.read_XLS_range(read_range[ndx], reportWS_read)
-        # Schreibe Werte
         mod.write_XLS_range(write_range[ndx], cell_values, reportWS_write)
-    # Übertrage einzelne Excel-Zellen
     reportWS_write['D7'].value  = reportWS_read['C7'].value
     reportWS_write['H7'].value  = reportWS_read['G7'].value
     reportWS_write['H18'].value  = reportWS_read['H17'].value
-
-    #-- Worksheet: 'Aktuelle Wirtschaftsdaten'
     reportWS_read  = reportWB_read['Aktuelle Wirtschaftsdaten']
     reportWS_write = reportWB_write['Aktuelle Wirtschaftsdaten']
-
     szenario_tuple = ('PreisHStoff', 'PreisMat1', 'PreisMat2', 'LagerMat',
                       'Zinsen', 'Finanzen',
                       'Gehalt', 'LohnNK', 'BedarfSOLID', 'BedarfIDEAL',
                       'AV_GG',
                       'AnlagenS', 'AnlagenM', 'AnlagenL',
                       'Sondermarkt', 'TransportFE', 'LagerFE')
-    
-    # Aktualisiere Szenario-Werte der aktuellen Periode
     write_range = (('D6' , 'D10'),
                    ('D12', 'D17'),
                    ('D19', 'D24'),
                    ('D26', 'D28'),
                    ('D33', 'D38'),
                    ('D40', 'D42'),
-    
                    ('I6',  'I8' ),
                    ('I10', 'I18'),
                    ('I23', 'I26'),
                    ('I28', 'I31'),
                    ('I36', 'I38'),
-    
                    ('N6',  'N11'),
                    ('N13', 'N18'),
                    ('N20', 'N25'),
@@ -707,21 +423,17 @@ for co in range(NUM_COMPANIES):
             write_range[ndx],
             szenario[szenario_tuple[ndx]][:, PERIOD+OFFSET+1],
             reportWS_write)
-    
-    # Aktualisiere Szenario-Werte der Vorperiode
     write_range = (('E6' , 'E10'),
                    ('E12', 'E17'),
                    ('E19', 'E24'),
                    ('E26', 'E28'),
                    ('E33', 'E38'),
                    ('E40', 'E42'),
-    
                    ('J6',  'J8' ),
                    ('J10', 'J18'),
                    ('J23', 'J26'),
                    ('J28', 'J31'),
                    ('J36', 'J38'),
-    
                    ('O6',  'O11'),
                    ('O13', 'O18'),
                    ('O20', 'O25'),
@@ -733,40 +445,25 @@ for co in range(NUM_COMPANIES):
             write_range[ndx],
             szenario[szenario_tuple[ndx]][:, PERIOD+OFFSET],
             reportWS_write)
-    # Aktualisiere einzelne Excel-Zellen (BGA-Investitionen)
     reportWS_write['I41'].value  = szenario['AV_BGA'][PERIOD+OFFSET+1]
     reportWS_write['J41'].value  = szenario['AV_BGA'][PERIOD+OFFSET]
-
-    # Speichere als neue Berichts-Datei
     reportWB_write.save(filename = company_dir[co] + report_files[co])
-
-    #--------##--------##--------##--------#
-    # Aktualisiere Unternehmensberichte
-    #-- Worksheet: 'GuV'
     reportWS_write = reportWB_write['GuV']
     reportWS_write['F32'].value  = fDec_FIN[4, co]
-    
-    #-- Worksheet: 'Fertigung'
     reportWS_write = reportWB_write['Fertigung']
     reportWS_write['D5'].value  = pDec_SOLID[0, co]
     reportWS_write['E5'].value  = pDec_IDEAL[0, co]
-    
-    #-- Worksheet: 'ErlösRechnung'
-    reportWS_write = reportWB_write['ErlösRechnung']
+    reportWS_write = reportWB_write['Erlï¿½sRechnung']
     reportWS_write['F10'].value = mDec_SOLID[0, co]
     reportWS_write['G11'].value = mDec_SOLID[1, co]
     reportWS_write['F23'].value = mDec_IDEAL[0, co]
     reportWS_write['G24'].value = mDec_IDEAL[1, co]
-
-    #-- Worksheet: 'Personal'
     reportWS_write = reportWB_write['Personal']
     reportWS_write['D10'].value = pDec_HR[0, co]
     reportWS_write['E9'].value  = (mDec_GESAMT[1, co]
                                     + mDec_GESAMT[2, co])
     reportWS_write['H14'].value = pDec_HR[2, co]
     reportWS_write['G23'].value = pDec_HR[1, co]
-    
-    #-- Worksheet: 'KostenRechnung 1'
     reportWS_write = reportWB_write['KostenRechnung 1']
     reportWS_write['C52'].value  = szenario['AV_GG'][1, PERIOD+OFFSET]
     reportWS_write['C77'].value  = mDec_GESAMT[0, co]
@@ -777,9 +474,7 @@ for co in range(NUM_COMPANIES):
     reportWS_write['C85'].value  = mDec_GESAMT[3, co]*COST_INDUSTRY_REPORT
     reportWS_write['C86'].value  = mDec_SOLID[7, co]*COST_MARKET_REPORT
     reportWS_write['C87'].value  = mDec_IDEAL[7, co]*COST_MARKET_REPORT
-    
-    #-- Worksheet: 'Anlagevermögen'
-    reportWS_write = reportWB_write['Anlagevermögen']
+    reportWS_write = reportWB_write['Anlagevermï¿½gen']
     reportWS_write['D15'].value  = mDec_SOLID[2, co]
     reportWS_write['E15'].value  = mDec_SOLID[3, co]
     reportWS_write['F15'].value  = mDec_IDEAL[2, co]
@@ -787,30 +482,18 @@ for co in range(NUM_COMPANIES):
     reportWS_write['X15'].value  = (szenario['AV_BGA'][PERIOD+OFFSET]
                                     + pDec_HR[3, co])
     reportWS_write['AF15'].value = pDec_HR[1, co]
-
-    # Typen (Code) der Technischen Anlagen
     type_TA = [None, "'S'", "'M'", "'L'"]
-
-    # Daten der aktuellen Technischen Anlagen
     ta_data = np.vstack((
         np.zeros(szenario['AnlagenS'][:, PERIOD+OFFSET].size),
         szenario['AnlagenS'][:, PERIOD+OFFSET],
         szenario['AnlagenM'][:, PERIOD+OFFSET],
         szenario['AnlagenL'][:, PERIOD+OFFSET]))
-
-    # Anzahl neu investierter Werkstätten
     n_cells = 0
-    # Investitionen in neue Anlagen
     inv_TA = 0
-    # RestwertErlös der veräußerten Anlagen
     res_val = 0
-    # AbgangsVerluste (Sonder-Abschreibungen) der veräußerten Anlagen
     imp_loss = 0
-    # Anzahl Technische Anlagen
     num_TA = 0
-    # Alter der Technischen Anlagen
     age_TA = 0
-    # Kapazitätseinheiten der Technischen Anlagen
     ke_TA = 0
     for sl in range(NUM_CELLS):
         reportWS_write.cell(row=8 , column=14+sl).value = 0
@@ -859,29 +542,18 @@ for co in range(NUM_COMPANIES):
                 age_TA += (PERIOD+1 - reportWS_write.cell(row=16, column=14+sl
                                                           ).value)
                 ke_TA += reportWS_write.cell(row=22, column=14+sl).value
-
-    #-- Kapazitätseinheiten der Technischen Anlagen
     pRes_TA_h[0, co, PERIOD+OFFSET] = ke_TA
-    #-- Gesamt-Investitionen in Technische Anlagen (und Werkstätten)
     pRes_TA_h[2, co, PERIOD+OFFSET] = (inv_TA
                                        - res_val
                                        + n_cells
                                        * szenario['AV_GG'][2, PERIOD+OFFSET])
     del(sl, ta_data, ke_TA)
-
-    # Zugänge in GG
     reportWS_write['J8'].value = (szenario['AV_GG'][0, PERIOD+OFFSET]
                                   + n_cells*szenario['AV_GG'][2, PERIOD+OFFSET])
-    # Restwerterlös der veräußerten Anlagen
     reportWS_write['M25'].value = res_val
-    # AbgangsVerluste (Sonder-Abschreibungen) der veräußerten Anlagen
     reportWS_write['M26'].value = imp_loss
-
-    #-- Worksheet: 'Aktuelle Wirtschaftsdaten'
     reportWS_write = reportWB_write['Aktuelle Wirtschaftsdaten']
     reportWS_write['O2'].value   = PERIOD
-
-    # Aktualisiere Abschreibungen auf GG
     reportWS_write['I39'].value  = (reportWS_write['I39'].value
                                     + szenario['AV_GG'][0, PERIOD+OFFSET+1]/50
                                     + n_cells*szenario['AV_GG'][2, PERIOD+OFFSET]
@@ -889,45 +561,28 @@ for co in range(NUM_COMPANIES):
     reportWS_write['J39'].value  = (reportWS_write['J39'].value
                                     + n_cells*szenario['AV_GG'][2, PERIOD+OFFSET]
                                     /UL_CELLS)
-
-    #-- Worksheet: 'Finanzwerte'
     reportWS_write = reportWB_write['Finanzwerte']
     reportWS_write['C17'].value = fDec_FIN[3, co]
     reportWS_write['K17'].value = fDec_FIN[0, co]
     reportWS_write['O17'].value = fDec_FIN[1, co]
     reportWS_write['S17'].value = fDec_FIN[2, co]
-    
-    #-- Worksheet: 'Vorräte'
-    reportWS_write = reportWB_write['Vorräte']
+    reportWS_write = reportWB_write['Vorrï¿½te']
     reportWS_write['C7'].value  = (pDec_SOLID[1, co] + pDec_IDEAL[1, co])
     ndx = min(np.searchsorted(szenario['MengeHStoff'],
                               pDec_SOLID[1, co] + pDec_IDEAL[1, co]),
               len(szenario['PreisHStoff'][:, PERIOD+OFFSET])-1)
     reportWS_write['D7'].value = szenario['PreisHStoff'][ndx, PERIOD+OFFSET]
-
     reportWS_write['F7'].value  = pDec_SOLID[2, co]
     ndx = min(np.searchsorted(szenario['MengeMat1'], pDec_SOLID[2, co]),
               len(szenario['PreisMat1'][:, PERIOD+OFFSET])-1)
     reportWS_write['G7'].value = szenario['PreisMat1'][ndx, PERIOD+OFFSET]
-    
     reportWS_write['I7'].value  = pDec_IDEAL[2, co]
     ndx = min(np.searchsorted(szenario['MengeMat2'], pDec_IDEAL[2, co]),
               len(szenario['PreisMat2'][:, PERIOD+OFFSET])-1)
     reportWS_write['J7'].value = szenario['PreisMat2'][ndx, PERIOD+OFFSET]
-
-    #--------##--------##--------##--------#
-    # Speichere als neue Berichts-Datei
     reportWB_write.save(filename = company_dir[co] + report_files[co])
-
-    # Schließe Berichts-Dateien
     reportWB_read.close()
     reportWB_write.close()
-
-
-    #--------##--------##--------##--------##--------##--------##--------#
-    # Absatzmarkt-Modell
-    #--------##--------##--------##--------##--------##--------##--------#
-    #-- Produktqualitäten (Produkt-Politik)
     prod_qual = mod.product_quality(
         np.vstack((mDec_SOLID_h[2:4, co, PERIOD+OFFSET-1:PERIOD+OFFSET+1]/1000,
                     mDec_IDEAL_h[2:4, co, PERIOD+OFFSET-1:PERIOD+OFFSET+1]/1000)),
@@ -936,94 +591,59 @@ for co in range(NUM_COMPANIES):
     mMix_SOLID_h[0:7, co, PERIOD+OFFSET] = prod_qual[0]
     mMix_IDEAL_h[0:7, co, PERIOD+OFFSET] = prod_qual[1]
     del(prod_qual)
-
-    #-- Werbe- und Vertriebswirkung
-    #---- Initialisiere neue Märkte
-    #------ Markt 1: Initialisiere SOLID - Ausland
     if PERIOD == MARKET_1:
         mMix_SOLID_h[ 8, co, PERIOD+OFFSET-1] = mDec_SOLID_h[5, co, PERIOD+OFFSET]
         mMix_SOLID_h[10, co, PERIOD+OFFSET-1] = mDec_GESAMT_h[2, co, PERIOD+OFFSET]
-    #------ Markt 2: Initialisiere IDEAL - Inland
     if PERIOD == MARKET_2:
         mMix_IDEAL_h[ 7, co, PERIOD+OFFSET-1] = mDec_IDEAL_h[4, co, PERIOD+OFFSET]
         mMix_IDEAL_h[ 9, co, PERIOD+OFFSET-1] = mDec_GESAMT_h[1, co, PERIOD+OFFSET]
-    #------ Markt 3: Initialisiere IDEAL - Ausland
     if PERIOD == MARKET_3:
         mMix_IDEAL_h[ 8, co, PERIOD+OFFSET-1] = mDec_IDEAL_h[5, co, PERIOD+OFFSET]
         mMix_IDEAL_h[10, co, PERIOD+OFFSET-1] = mDec_GESAMT_h[2, co, PERIOD+OFFSET]
-    #---- SOLID
     mMix_SOLID_h[7:11, co, PERIOD+OFFSET] = mod.mMix_effects(
         np.vstack((mDec_SOLID_h[4:6, co, PERIOD+OFFSET-1:PERIOD+OFFSET+1],
                    mDec_GESAMT_h[1:3, co, PERIOD+OFFSET-1:PERIOD+OFFSET+1])),
         mMix_SOLID_h[7:11, co, PERIOD+OFFSET-1])
-    #---- IDEAL
     if PERIOD >= MARKET_2:
         mMix_IDEAL_h[7:11, co, PERIOD+OFFSET] = mod.mMix_effects(
             np.vstack((mDec_IDEAL_h[4:6, co, PERIOD+OFFSET-1:PERIOD+OFFSET+1],
                        mDec_GESAMT_h[1:3, co, PERIOD+OFFSET-1:PERIOD+OFFSET+1])),
             mMix_IDEAL_h[7:11, co, PERIOD+OFFSET-1])
-
-    #-- Kundenzufriedenheiten (Customer Satisfaction)
-    #---- SOLID
     cSat_SOLID_h[[0, 3, 4, 5, 8, 9], co, PERIOD+OFFSET] = mod.cSAT_SOLID(
         mDec_SOLID_h[0:2, co, PERIOD+OFFSET-1:PERIOD+OFFSET+1],
         [mMix_SOLID_h[6, co, PERIOD+OFFSET],
           szenario['eQI_SOLID'][PERIOD+OFFSET]],
         cSat_SOLID_h[:, co, PERIOD+OFFSET-2:PERIOD+OFFSET],
         mMix_SOLID_h[12:14, co, PERIOD+OFFSET-1])
-    #---- IDEAL
     cSat_IDEAL_h[[0, 3, 4, 5, 8, 9], co, PERIOD+OFFSET] = mod.cSAT_IDEAL(
         mDec_IDEAL_h[0:2, co, PERIOD+OFFSET-1:PERIOD+OFFSET+1],
         [mMix_IDEAL_h[6, co, PERIOD+OFFSET],
           szenario['eQI_IDEAL'][PERIOD+OFFSET]],
         cSat_IDEAL_h[:, co, PERIOD+OFFSET-2:PERIOD+OFFSET],
         mMix_IDEAL_h[12:14, co, PERIOD+OFFSET-1])
-
-    #-- Markenstärke (Brand Strength)
-    #---- SOLID
     mMix_SOLID_h[11:14, co, PERIOD+OFFSET] = mod.brand_strength(
         mDec_GESAMT_h[0, co, PERIOD+OFFSET-2:PERIOD+OFFSET+1],
         cSat_SOLID_h[[4, 9], co, PERIOD+OFFSET],
         mMix_SOLID_h[11, co, PERIOD+OFFSET-1])
-    #---- IDEAL
     mMix_IDEAL_h[11:14, co, PERIOD+OFFSET] = mod.brand_strength(
         mDec_GESAMT_h[0, co, PERIOD+OFFSET-2:PERIOD+OFFSET+1],
         cSat_IDEAL_h[[4, 9], co, PERIOD+OFFSET],
         mMix_IDEAL_h[11, co, PERIOD+OFFSET-1])
-
-
-    #--------##--------##--------##--------##--------##--------##--------#
-    # Arbeitsmarkt-Modell
-    #--------##--------##--------##--------##--------##--------##--------#
-    #-- Wirkung der HR-Maßnahmen
     (pDec_eff, pHR_ar0) = mod.pDec_effects(
         pDec_HR_h[:, co, PERIOD+OFFSET-1:PERIOD+OFFSET+1],
         pRes_HR_h[0:12, co, PERIOD+OFFSET-2:PERIOD+OFFSET+1])
     pRes_HR_h[8:12, co, PERIOD+OFFSET] = pDec_eff
     pRes_HR_h[[0, 3, 4, 6], co, PERIOD+OFFSET] = pHR_ar0
-   
-    #-- AG-Image
     pRes_HR_h[16, co, PERIOD+OFFSET] = mod.bs_emp(
         np.vstack((
             pRes_HR_h[8:12, co, PERIOD+OFFSET-1:PERIOD+OFFSET+1],
             szenario['eMA'][:, PERIOD+OFFSET-1:PERIOD+OFFSET+1],
             fRes_COMP_h[[0, 4, 7, 8], co, PERIOD+OFFSET-2:PERIOD+OFFSET],
             pRes_HR_h[16, co, PERIOD+OFFSET-1:PERIOD+OFFSET+1])))
-
-    #-- Personalentwicklung: MA-Produktivität
     pRes_HR_h[15, co, PERIOD+OFFSET] = mod.pe_prod(
         pRes_HR_h[10, co, PERIOD+OFFSET])
-
-    #-- Alter der Technischen Anlagen
     pRes_HR_h[7, co, PERIOD+OFFSET] = round(age_TA/num_TA, 1)
-
-
-    #--------##--------##--------##--------##--------##--------##--------#
-    # Aktualisiere Informations-Datei der Periode
-    #--------##--------##--------##--------##--------##--------##--------#
-    #-- Worksheet: 'Branchenbericht'
     info_period_WS  = info_period_WB['Branchenbericht']
-
     info_period_WS.cell(row=48, column=4+co
                         ).value = pDec_HR[2, co]
     info_period_WS.cell(row=49, column=4+co
@@ -1041,10 +661,7 @@ for co in range(NUM_COMPANIES):
                                    + mDec_IDEAL[3, co])
     info_period_WS.cell(row=63, column=4+co
                         ).value = pRes_HR_h[16, co, PERIOD+OFFSET]-100
-
-    #-- Worksheet: 'Marktbericht SOLID'
     info_period_WS  = info_period_WB['Marktbericht SOLID']
-    
     info_period_WS.cell(row= 5, column=4+co
                         ).value = mMix_SOLID_h[4, co, PERIOD+OFFSET]-100
     info_period_WS.cell(row= 6, column=4+co
@@ -1065,7 +682,6 @@ for co in range(NUM_COMPANIES):
                         ).value = mDec_SOLID[8, co]
     info_period_WS.cell(row=33, column=4+co
                         ).value = szenario['Sondermarkt'][0, PERIOD+OFFSET]
-
     if PERIOD>=MARKET_1:
         info_period_WS.cell(row=20, column=4+co
                             ).value = mDec_SOLID[1, co]
@@ -1077,11 +693,8 @@ for co in range(NUM_COMPANIES):
                             ).value = cSat_SOLID_h[9, co, PERIOD+OFFSET]-100
         info_period_WS.cell(row=24, column=4+co
                             ).value = mMix_SOLID_h[13, co, PERIOD+OFFSET]-100
-
     if PERIOD>=MARKET_2:
-        #-- Worksheet: 'Marktbericht IDEAL'
         info_period_WS  = info_period_WB['Marktbericht IDEAL']
-        
         info_period_WS.cell(row= 5, column=4+co
                             ).value = mMix_IDEAL_h[4, co, PERIOD+OFFSET]-100
         info_period_WS.cell(row= 6, column=4+co
@@ -1098,7 +711,6 @@ for co in range(NUM_COMPANIES):
                             ).value = mMix_IDEAL_h[12, co, PERIOD+OFFSET]-100
         info_period_WS.cell(row=31, column=4+co
                             ).value = mDec_GESAMT[0, co]
-    
     if PERIOD>=MARKET_3:
         info_period_WS.cell(row=20, column=4+co
                             ).value = mDec_IDEAL[1, co]
@@ -1110,14 +722,8 @@ for co in range(NUM_COMPANIES):
                             ).value = cSat_IDEAL_h[9, co, PERIOD+OFFSET]-100
         info_period_WS.cell(row=24, column=4+co
                             ).value = mMix_IDEAL_h[13, co, PERIOD+OFFSET]-100
-
-        
-#--------##--------##--------##--------##--------##--------##--------##--------#
-# Periode 0: Übernehme Unternehmens-Daten von U01
-#            für alle anderen Unternehmen
 if (PERIOD == 0):
     for co in range(1, num_companies0):
-        # Marketing 
         mDec_SOLID_h[:, co,
                      PERIOD+OFFSET] = mDec_SOLID_h[:, 0, PERIOD+OFFSET]
         mDec_IDEAL_h[:, co,
@@ -1132,8 +738,6 @@ if (PERIOD == 0):
                      PERIOD+OFFSET] = mMix_IDEAL_h[:, 0, PERIOD+OFFSET]
         cSat_IDEAL_h[:, co,
                      PERIOD+OFFSET] = cSat_IDEAL_h[:, 0, PERIOD+OFFSET]
-
-        # Fertigung / Personal / Beschaffung
         pDec_SOLID_h[:, co,
                      PERIOD+OFFSET] = pDec_SOLID_h[:, 0, PERIOD+OFFSET]
         pDec_IDEAL_h[:, co,
@@ -1149,20 +753,13 @@ if (PERIOD == 0):
         pRes_HR_h[16, co, PERIOD+OFFSET] = pRes_HR_h[16, 0, PERIOD+OFFSET]
         pRes_HR_h[15, co, PERIOD+OFFSET] = pRes_HR_h[15, 0, PERIOD+OFFSET]
         pRes_HR_h[ 7, co, PERIOD+OFFSET] = pRes_HR_h[ 7, 0, PERIOD+OFFSET]
-
-        # Finanzen / Rechnungswesen / Erfolg
         fDec_FIN_h[:, co,
                    PERIOD+OFFSET] = fDec_FIN_h[:, 0, PERIOD+OFFSET]
         fDec_FIN_h[:, co,
                    PERIOD+OFFSET] = fDec_FIN_h[:, 0, PERIOD+OFFSET]
         fRes_COMP_h[:, co,
                     PERIOD+OFFSET] = fRes_COMP_h[:, 0, PERIOD+OFFSET]
-
-        #--------##--------##--------##--------#
-        # Aktualisiere Informations-Datei der Periode
-        #-- Worksheet: 'Branchenbericht'
         info_period_WS  = info_period_WB['Branchenbericht']
-    
         info_period_WS.cell(row=48, column=4+co
                             ).value = pDec_HR[2, 0]
         info_period_WS.cell(row=49, column=4+co
@@ -1180,10 +777,7 @@ if (PERIOD == 0):
                                        + mDec_IDEAL[3, 0])
         info_period_WS.cell(row=63, column=4+co
                             ).value = pRes_HR_h[16, 0, PERIOD+OFFSET]-100
-
-        #-- Worksheet: 'Marktbericht SOLID'
         info_period_WS  = info_period_WB['Marktbericht SOLID']
-
         info_period_WS.cell(row= 5, column=4+co
                             ).value = mMix_SOLID_h[4, 0, PERIOD+OFFSET]-100
         info_period_WS.cell(row= 6, column=4+co
@@ -1205,8 +799,6 @@ if (PERIOD == 0):
         info_period_WS.cell(row=33, column=4+co
                             ).value = szenario['Sondermarkt'][0, PERIOD+OFFSET]
     del(co)
-
-# Lösche temporäre und nicht mehr benötigte  Variablen
 del(COST_INDUSTRY_REPORT, COST_MARKET_REPORT)
 del(mDec_SOLID_cell, mDec_IDEAL_cell, mDec_GESAMT_cell,
     pDec_SOLID_cell, pDec_IDEAL_cell, pDec_HR_cell,
@@ -1219,53 +811,31 @@ del(decisionWB_read, decisionWB_write,
     decisionWS_read, decisionWS_write)
 del(reportWS_read, reportWB_read, report_files_old)
 del(n_cells, inv_TA, res_val, imp_loss, num_TA, age_TA)
-del(pDec_eff, pHR_ar0) 
-
-#--------##--------##--------##--------#
-#-- 2. Zwischenzeit
+del(pDec_eff, pHR_ar0)
 mean_time = time.time()
 print('')
 print('1. Schleife')
 print(round(mean_time - start_time, 1), f'({mean_time - mean_time0:.1f})')
 mean_time0 = mean_time
-#--------##--------##--------##--------##--------##--------##--------##--------#
-#--------#  Ende der 1. Schleife über alle Unternehmen      #--------##--------#
-#--------##--------##--------##--------##--------##--------##--------##--------#
-
-
-#--------##--------##--------##--------##--------##--------##--------##--------#
-# Arbeitsmarkt-Modell:  Marktausgleich Angebot vs. Nachfrage
-#--------##--------##--------##--------##--------##--------##--------##--------#
-#-- MA-Motivation
 pRes_HR_h[17, :, PERIOD+OFFSET] = mod.emp_motivation(
     np.vstack((
         pRes_HR_h[8:12, :, PERIOD+OFFSET],
         pRes_HR_h[12, :, PERIOD+OFFSET-1],
         pRes_HR_h[16, :, PERIOD+OFFSET],
         pRes_HR_h[17, :, PERIOD+OFFSET-1])))
-
-#-- Folgen der MA-Motivation: Produktivität / Fluktuation / Fehlzeiten
 pRes_HR_h[18:21, :, PERIOD+OFFSET] = mod.em_effects(
     pRes_HR_h[17, :, PERIOD+OFFSET])
-
-#-- Arbeitsmarkt-Produktivität
 pRes_HR_h[14, :, PERIOD+OFFSET] = mod.lm_prod(
     np.vstack((
         pRes_HR_h[8:12, :, PERIOD+OFFSET],
         pRes_HR_h[14, :, PERIOD+OFFSET-1])))
-
-#-- Arbeitsmarkt-Angebot (Gesamt)
 lm_supply = mod.lm_supply(
     pRes_HR_h[8, :, PERIOD+OFFSET],
     [szenario['eMA'][0, PERIOD+OFFSET],
      szenario['LohnNK'][5, PERIOD+OFFSET]])
 pRes_HR_h[13, :, PERIOD+OFFSET] = lm_supply
-
-#-- Arbeitsmarkt-Anteile -> potenzielles Arbeitsangebot
 lm_share = mod.lm_share(
     pRes_HR_h[8:12, :, PERIOD+OFFSET])
-
-#-- Arbeitsmarkt-Ausgleich: Nachfrage vs. Angebot
 (hr_dep, emp_prod) = mod.hr_department(
     np.vstack((pRes_HR_h[1, :, PERIOD+OFFSET-1],
                pDec_HR_h[0, :, PERIOD+OFFSET])),
@@ -1277,19 +847,6 @@ pRes_HR_h[ 1, :, PERIOD+OFFSET] = hr_dep[0]
 pRes_HR_h[ 2, :, PERIOD+OFFSET] = hr_dep[1]
 pRes_HR_h[21, :, PERIOD+OFFSET] = emp_prod
 del(hr_dep, emp_prod, lm_share, lm_supply)
-
-
-#--------##--------##--------##--------##--------##--------##--------##--------#
-# Absatzmarkt-Modell:  Marktausgleich Nachfrage vs. Angebot
-#--------##--------##--------##--------##--------##--------##--------##--------#
-# Markt 0: SOLID - Inland
-# Markt 1: SOLID - Ausland
-# Markt 2: IDEAL - Inland
-# Markt 3: IDEAL - Ausland
-
-#--------##--------##--------##--------#
-# Produkt-Nachfrage
-#-- SOLID-Inland: Marktvolumen (aktuelle Gesamtnachfrage)
 (mv_cur, arma0) = mod.sm_volume(
     np.hstack((np.array([mMix_SOLID_h[6, :, PERIOD+OFFSET]]).T,
                mDec_SOLID_h[ 0, :, PERIOD+OFFSET-1:PERIOD+OFFSET+1],
@@ -1301,7 +858,6 @@ del(hr_dep, emp_prod, lm_share, lm_supply)
                szenario['eQI_SOLID'][PERIOD+OFFSET-1:PERIOD+OFFSET+1])),
     0, szenario['MarktVol'][1:4, PERIOD+OFFSET-1])
 szenario['MarktVol'][1:4, PERIOD+OFFSET] = arma0
-#-- SOLID-Inland: Marktnachfrage (je Unternehmen)
 prod_demand[0] = mod.sm_share(
     np.vstack((mMix_SOLID_h[ 6, :, PERIOD+OFFSET],
                mDec_SOLID_h[ 0, :, PERIOD+OFFSET],
@@ -1310,8 +866,6 @@ prod_demand[0] = mod.sm_share(
                mMix_SOLID_h[12, :, PERIOD+OFFSET],
                cSat_SOLID_h[ 4, :, PERIOD+OFFSET])),
     mv_cur)
-
-#-- SOLID-Ausland: Marktvolumen (aktuelle Gesamtnachfrage)
 if PERIOD>=MARKET_1:
     (mv_cur, arma0) = mod.sm_volume(
         np.hstack((np.array([mMix_SOLID_h[6, :, PERIOD+OFFSET]]).T,
@@ -1324,7 +878,6 @@ if PERIOD>=MARKET_1:
                     szenario['eQI_SOLID'][PERIOD+OFFSET-1:PERIOD+OFFSET+1])),
         1, szenario['MarktVol'][5:8, PERIOD+OFFSET-1])
     szenario['MarktVol'][5:8, PERIOD+OFFSET] = arma0
-    #-- SOLID-Ausland: Marktnachfrage (je Unternehmen)
     prod_demand[1] = mod.sm_share(
         np.vstack((mMix_SOLID_h[ 6, :, PERIOD+OFFSET],
                    mDec_SOLID_h[ 1, :, PERIOD+OFFSET],
@@ -1333,8 +886,6 @@ if PERIOD>=MARKET_1:
                    mMix_SOLID_h[13, :, PERIOD+OFFSET],
                    cSat_SOLID_h[ 9, :, PERIOD+OFFSET])),
         mv_cur/szenario['Finanzen'][0, PERIOD+OFFSET])
-
-#-- IDEAL-Inland: Marktvolumen (aktuelle Gesamtnachfrage)
 if PERIOD>=MARKET_2:
     (mv_cur, arma0) = mod.sm_volume(
         np.hstack((np.array([mMix_IDEAL_h[6, :, PERIOD+OFFSET]]).T,
@@ -1347,7 +898,6 @@ if PERIOD>=MARKET_2:
                     szenario['eQI_IDEAL'][PERIOD+OFFSET-1:PERIOD+OFFSET+1])),
         2, szenario['MarktVol'][9:12, PERIOD+OFFSET-1])
     szenario['MarktVol'][9:12, PERIOD+OFFSET] = arma0
-    #-- IDEAL-Inland: Marktnachfrage (je Unternehmen)
     prod_demand[2] = mod.sm_share(
         np.vstack((mMix_IDEAL_h[ 6, :, PERIOD+OFFSET],
                    mDec_IDEAL_h[ 0, :, PERIOD+OFFSET],
@@ -1356,8 +906,6 @@ if PERIOD>=MARKET_2:
                    mMix_IDEAL_h[12, :, PERIOD+OFFSET],
                    cSat_IDEAL_h[ 4, :, PERIOD+OFFSET])),
         mv_cur)
-
-#-- IDEAL-Ausland: Marktvolumen (aktuelle Gesamtnachfrage)
 if PERIOD>=MARKET_3:
     (mv_cur, arma0) = mod.sm_volume(
         np.hstack((np.array([mMix_IDEAL_h[6, :, PERIOD+OFFSET]]).T,
@@ -1370,7 +918,6 @@ if PERIOD>=MARKET_3:
                     szenario['eQI_IDEAL'][PERIOD+OFFSET-1:PERIOD+OFFSET+1])),
         3, szenario['MarktVol'][13:16, PERIOD+OFFSET-1])
     szenario['MarktVol'][13:16, PERIOD+OFFSET] = arma0
-    #-- IDEAL-Ausland: Marktnachfrage (je Unternehmen)
     prod_demand[3] = mod.sm_share(
         np.vstack((mMix_IDEAL_h[ 6, :, PERIOD+OFFSET],
                    mDec_IDEAL_h[ 1, :, PERIOD+OFFSET],
@@ -1380,22 +927,15 @@ if PERIOD>=MARKET_3:
                    cSat_IDEAL_h[ 9, :, PERIOD+OFFSET])),
         mv_cur/szenario['Finanzen'][0, PERIOD+OFFSET])
 del(mv_cur, arma0)
-
-# Speichere Nachfrage in Kundenzufriedenheitsdaten
 cSat_SOLID_h[ 2, :, PERIOD+OFFSET] = prod_demand[0]
 cSat_SOLID_h[ 7, :, PERIOD+OFFSET] = prod_demand[1]
 cSat_IDEAL_h[ 2, :, PERIOD+OFFSET] = prod_demand[2]
 cSat_IDEAL_h[ 7, :, PERIOD+OFFSET] = prod_demand[3]
-
 print('')
 print('Nachfrage SOLID-Inland :', prod_demand[0])
 print('Nachfrage SOLID-Ausland:', prod_demand[1])
 print('Nachfrage IDEAL-Inland :', prod_demand[2])
 print('Nachfrage IDEAL-Ausland:', prod_demand[3])
-
-#--------##--------##--------##--------#
-# Produkt-Angebot
-#-- effektive Produkt-Fertigung je Unternehmen / Auslastungsgrade
 (prod_act, cap_ut) = mod.sm_supply(
     np.vstack((pDec_SOLID_h[ 0, :, PERIOD+OFFSET],
                pDec_IDEAL_h[ 0, :, PERIOD+OFFSET])),
@@ -1415,8 +955,6 @@ del(cap_ut)
 print('')
 print('Fertigung SOLID:', prod_act[0])
 print('Fertigung IDEAL:', prod_act[1])
-
-#-- SOLID: Überprüfung, ob Sondermarkt bedient werden kann
 prod_special = np.amin(
     np.vstack(((mMix_SOLID_h[14, :, PERIOD+OFFSET-1]
               + mMix_SOLID_h[15, :, PERIOD+OFFSET-1]
@@ -1427,8 +965,6 @@ prod_special = np.amax(
                np.zeros(num_companies0))), axis=0)
 mDec_SOLID_h[ 8, :, PERIOD+OFFSET] = prod_special
 del(prod_special)
-
-#-- SOLID: Überprüfung, ob Auslandsmarkt bedient werden kann
 prod_abroad = np.amin(
     np.vstack(((mMix_SOLID_h[14, :, PERIOD+OFFSET-1]
               + mMix_SOLID_h[15, :, PERIOD+OFFSET-1]
@@ -1439,8 +975,6 @@ prod_abroad = np.amax(
     np.vstack((prod_abroad,
                np.zeros(num_companies0))), axis=0)
 mDec_SOLID_h[ 6, :, PERIOD+OFFSET] = prod_abroad
-
-#-- IDEAL: Überprüfung, ob Auslandsmarkt bedient werden kann
 prod_abroad = np.amin(
     np.vstack(((mMix_IDEAL_h[14, :, PERIOD+OFFSET-1]
                 + mMix_IDEAL_h[15, :, PERIOD+OFFSET-1]
@@ -1451,52 +985,33 @@ prod_abroad = np.amax(
                np.zeros(num_companies0))), axis=0)
 mDec_IDEAL_h[ 6, :, PERIOD+OFFSET] = prod_abroad
 del(prod_abroad)
-
-#-- effektives Produkt-Angebot: SOLID-Inland  = Lager + Fertigung - Lieferung(Ausland) - Sondermarkt
 prod_supply[0] = (mMix_SOLID_h[14, :, PERIOD+OFFSET-1]
                 + prod_act[0]
                 - mDec_SOLID_h[ 6, :, PERIOD+OFFSET]
                 - mDec_SOLID_h[ 8, :, PERIOD+OFFSET])
-#-- effektives Produkt-Angebot: SOLID-Ausland = Lager + Lieferung(Ausland)
 prod_supply[1] = (mMix_SOLID_h[15, :, PERIOD+OFFSET-1]
                 + mDec_SOLID_h[ 6, :, PERIOD+OFFSET])
-
-#-- effektives Produkt-Angebot: IDEAL-Inland  = Lager + Fertigung - Lieferung(Ausland)
 prod_supply[2] = (mMix_IDEAL_h[14, :, PERIOD+OFFSET-1]
                 + prod_act[1]
                 - mDec_IDEAL_h[ 6, :, PERIOD+OFFSET])
-#-- effektives Produkt-Angebot: IDEAL-Ausland = Lager + Lieferung(Ausland)
 prod_supply[3] = (mMix_IDEAL_h[15, :, PERIOD+OFFSET-1]
                 + mDec_IDEAL_h[ 6, :, PERIOD+OFFSET])
-
-#--------##--------##--------##--------#
-# Marktausgleich 1: Express-Lieferungen
-#-- Überschuss-Nachfrage
 prod_excess = prod_supply - prod_demand
-
-#-- SOLID: Express-Transporte ins Ausland (bzw. zurück, wenn negativ)
 mismatch_quant  = np.prod(prod_excess[0:2], axis=0)<0
 mismatch_market = np.greater(prod_excess[0], np.zeros(num_companies0))
 express_SOLID   = (np.amin(abs(prod_excess[0:2]), axis=0)
                    *mismatch_quant
                    *(2*mismatch_market-1))
-
-#-- IDEAL: Express-Transporte ins Ausland (bzw. zurück, wenn negativ)
 mismatch_quant  = np.prod(prod_excess[2:4], axis=0)<0
 mismatch_market = np.greater(prod_excess[2], np.zeros(num_companies0))
 express_IDEAL   = (np.amin(abs(prod_excess[2:4]), axis=0)
                    *mismatch_quant
                    *(2*mismatch_market-1))
 del(mismatch_quant, mismatch_market)
-
-#--korrigierte Produkt-Angebote (inkl. Express-Lieferungen)
 prod_supply[0] = prod_supply[0] - express_SOLID
 prod_supply[1] = prod_supply[1] + express_SOLID
 prod_supply[2] = prod_supply[2] - express_IDEAL
 prod_supply[3] = prod_supply[3] + express_IDEAL
-
-#--------##--------##--------##--------#
-# Markt-Ausgleich 2: Angebot vs. Nachfrage
 sales_cur[0] = np.amin(
     np.vstack((prod_supply[0],
                prod_demand[0])), axis = 0)
@@ -1514,45 +1029,31 @@ print('Absatz SOLID-Inland :', sales_cur[0])
 print('Absatz SOLID-Ausland:', sales_cur[1])
 print('Absatz IDEAL-Inland :', sales_cur[2])
 print('Absatz IDEAL-Ausland:', sales_cur[3])
-
-#--------##--------##--------##--------#
-# neue Lagerbestände
-#-- SOLID-Inland 
 mMix_SOLID_h[14, :, PERIOD+OFFSET] = (mMix_SOLID_h[14, :, PERIOD+OFFSET-1]
                                     + prod_act[0]
                                     - mDec_SOLID_h[ 6, :, PERIOD+OFFSET]
                                     - express_SOLID
                                     - mDec_SOLID_h[ 8, :, PERIOD+OFFSET]
                                     - sales_cur[0])
-#-- SOLID-Ausland 
 mMix_SOLID_h[15, :, PERIOD+OFFSET] = (mMix_SOLID_h[15, :, PERIOD+OFFSET-1]
                                     + mDec_SOLID_h[ 6, :, PERIOD+OFFSET]
                                     + express_SOLID
                                     - sales_cur[1])
-#-- IDEAL-Inland 
 mMix_IDEAL_h[14, :, PERIOD+OFFSET] = (mMix_IDEAL_h[14, :, PERIOD+OFFSET-1]
                                     + prod_act[1]
                                     - mDec_IDEAL_h[ 6, :, PERIOD+OFFSET]
                                     - express_IDEAL
                                     - sales_cur[2])
-#-- IDEAL-Ausland 
 mMix_IDEAL_h[15, :, PERIOD+OFFSET] = (mMix_IDEAL_h[15, :, PERIOD+OFFSET-1]
                                     + mDec_IDEAL_h[ 6, :, PERIOD+OFFSET]
                                     + express_IDEAL
                                     - sales_cur[3])
-
-# Speichere effektiven Absatz in Kundenzufriedenheitsdaten
 cSat_SOLID_h[ 1, :, PERIOD+OFFSET] = sales_cur[0]
-cSat_SOLID_h[ 6, :, PERIOD+OFFSET] = sales_cur[1] 
+cSat_SOLID_h[ 6, :, PERIOD+OFFSET] = sales_cur[1]
 cSat_IDEAL_h[ 1, :, PERIOD+OFFSET] = sales_cur[2]
-cSat_IDEAL_h[ 6, :, PERIOD+OFFSET] = sales_cur[3] 
+cSat_IDEAL_h[ 6, :, PERIOD+OFFSET] = sales_cur[3]
 del(prod_act, prod_demand, prod_supply, prod_excess)
-
-#--------##--------##--------##--------#
-# Aktualisiere Informations-Datei der Periode
-#-- Worksheet: 'Branchenbericht'
 info_period_WS  = info_period_WB['Branchenbericht']
-
 for co in range(num_companies0):
     info_period_WS.cell(row=50, column=4+co
                         ).value = pRes_HR_h[17, co, PERIOD+OFFSET]-100
@@ -1564,10 +1065,7 @@ for co in range(num_companies0):
                         ).value = pRes_HR_h[12, co, PERIOD+OFFSET]
     info_period_WS.cell(row=57, column=4+co
                         ).value = pRes_TA_h[1 , co, PERIOD+OFFSET]
-
-#-- Worksheet: 'Marktbericht SOLID'
 info_period_WS  = info_period_WB['Marktbericht SOLID']
-
 for co in range(num_companies0):
     info_period_WS.cell(row=14, column=4+co
                         ).value = cSat_SOLID_h[2, co, PERIOD+OFFSET]
@@ -1582,11 +1080,8 @@ for co in range(num_companies0):
                             ).value = sales_cur[1, co]
         info_period_WS.cell(row=27, column=4+co
                             ).value = mMix_SOLID_h[15, co, PERIOD+OFFSET]
-
-#-- Worksheet: 'Marktbericht IDEAL'
 if PERIOD>=MARKET_2:
     info_period_WS  = info_period_WB['Marktbericht IDEAL']
-    
     for co in range(num_companies0):
         info_period_WS.cell(row=14, column=4+co
                             ).value = cSat_IDEAL_h[2, co, PERIOD+OFFSET]
@@ -1601,30 +1096,15 @@ if PERIOD>=MARKET_2:
                                 ).value = sales_cur[3, co]
             info_period_WS.cell(row=27, column=4+co
                                 ).value = mMix_IDEAL_h[15, co, PERIOD+OFFSET]
-#--------##--------##--------##--------#
-#-- 3. Zwischenzeit
 mean_time = time.time()
 print('')
-print('Märkte')
+print('Mï¿½rkte')
 print(round(mean_time - start_time, 1), f'({mean_time - mean_time0:.1f})')
 mean_time0 = mean_time
-
-
-#--------##--------##--------##--------##--------##--------##--------##--------#
-#--------#  2. Schleife über alle Unternehmen     #--------##--------##--------#
-#--------##--------##--------##--------##--------##--------##--------##--------#
 for co in range(NUM_COMPANIES):
-    #--------##--------##--------##--------##--------##--------##--------#
-    # Neue Berichts-Dateien (aktualisiere neue Berichte)
-    #--------##--------##--------##--------##--------##--------##--------#
-    # Lade neue Berichts-Datei
     reportWB_write = load_workbook(
         filename = company_dir[co] + report_files[co])
-
-    #--------##--------##--------##--------#
-    # Aktualisiere Unternehmensberichte
-    #-- Worksheet: 'ErlösRechnung'
-    reportWS_write = reportWB_write['ErlösRechnung']
+    reportWS_write = reportWB_write['Erlï¿½sRechnung']
     reportWS_write['E10'].value = sales_cur[0, co]
     reportWS_write['E11'].value = sales_cur[1, co]
     reportWS_write['E12'].value = mDec_SOLID_h[8, co, PERIOD+OFFSET]
@@ -1632,8 +1112,6 @@ for co in range(NUM_COMPANIES):
     reportWS_write['E24'].value = sales_cur[3, co]
     reportWS_write['L13'].value = mDec_SOLID_h[6, co, PERIOD+OFFSET]
     reportWS_write['L26'].value = mDec_IDEAL_h[6, co, PERIOD+OFFSET]
-
-    #-- Worksheet: 'Personal'
     reportWS_write = reportWB_write['Personal']
     reportWS_write['D9'].value  = pRes_HR_h[ 1, co, PERIOD+OFFSET]
     reportWS_write['H6'].value  = pRes_HR_h[19:21, co, PERIOD+OFFSET].sum()
@@ -1641,48 +1119,30 @@ for co in range(NUM_COMPANIES):
     reportWS_write['F30'].value = pRes_HR_h[15, co, PERIOD+OFFSET]
     reportWS_write['F31'].value = pRes_HR_h[18, co, PERIOD+OFFSET]
     reportWS_write['F32'].value = pRes_HR_h[14, co, PERIOD+OFFSET]
-    
-    #-- Worksheet: 'Anlagevermögen'
-    reportWS_write = reportWB_write['Anlagevermögen']
+    reportWS_write = reportWB_write['Anlagevermï¿½gen']
     reportWS_write['D25'].value = mMix_SOLID_h[4, co, PERIOD+OFFSET]-100
     reportWS_write['E25'].value = mMix_SOLID_h[5, co, PERIOD+OFFSET]-100
     reportWS_write['F25'].value = mMix_IDEAL_h[4, co, PERIOD+OFFSET]-100
     reportWS_write['G25'].value = mMix_IDEAL_h[5, co, PERIOD+OFFSET]-100
-    
-    #-- Worksheet: 'Vorräte'
-    reportWS_write = reportWB_write['Vorräte']
+    reportWS_write = reportWB_write['Vorrï¿½te']
     reportWS_write['C16'].value = -express_SOLID[co]
     reportWS_write['F15'].value = mDec_SOLID_h[6, co, PERIOD+OFFSET]
     reportWS_write['I16'].value = -express_IDEAL[co]
     reportWS_write['L15'].value = mDec_IDEAL_h[6, co, PERIOD+OFFSET]
-
-    # Speichere neue Berichts-Datei
     reportWB_write.save(filename = company_dir[co] + report_files[co])
-    # Schließe neue Berichts-Datei
     reportWB_write.close()
-
-#--------##--------##--------##--------##--------##--------##--------##--------#
-# Periode 0: Übernehme Berichts- und Entscheidungs-Dateien von U01
-#            für alle anderen Unternehmen
 if (PERIOD == 0):
     reportWB  =  load_workbook(
         filename = company_dir[0] + report_files[0])
     decisionWB = load_workbook(
         filename = company_dir[0] + decision_files_new[0])
-
     for co in range(1, num_companies0):
         reportWB.save(filename = company_dir[co] + report_files[co])
         decisionWB.save(filename = company_dir[co] + decision_files_new[co])
     del(co)
-
-    # Schließe Excel-Bericht
     reportWB.close()
     decisionWB.close()
-
-    # Lösche temporäre und nicht mehr benötigte  Variablen
     del(reportWB, decisionWB)
-
-# Lösche temporäre und nicht mehr benötigte  Variablen
 del(decision_files, decision_files_new)
 del(mDec_SOLID, mDec_IDEAL, mDec_GESAMT,
     pDec_SOLID, pDec_IDEAL, pDec_HR,
@@ -1690,36 +1150,16 @@ del(mDec_SOLID, mDec_IDEAL, mDec_GESAMT,
 del(sales_cur, express_SOLID, express_IDEAL)
 del(type_TA, ndx)
 del(reportWB_write, reportWS_write)
-#--------##--------##--------##--------#
-#-- 4. Zwischenzeit
 mean_time = time.time()
 print('')
 print('2. Schleife')
 print(round(mean_time - start_time, 1), f'({mean_time - mean_time0:.1f})')
 mean_time0 = mean_time
-
-
-#--------##--------##--------##--------##--------##--------##--------##--------#
-#--------#  Ende der 2. Schleife über alle Unternehmen      #--------##--------#
-#--------##--------##--------##--------##--------##--------##--------##--------#
-# Rufe Excel-Berichte mit xlwings auf und aktualisiere Formeln
-# ACHTUNG: Damit 'openpyxl' in den Folgeperioden funktioniert müssen alle alten
-#          Unternehmensberichte mit 'xlwings' in Excel geöffnet, alle Formeln
-#          berechnet und diese neuen Werte gespeichert werden!
 with xw.App(visible=False) as app:
     for co in range(num_companies0):
-        # Öffne Berichtsdatei in xlwings
         report_WB = xw.Book(company_dir[co] + report_files[co])
-
-        # Aktualisiere Informations-Datei der Periode (openpyxl)
-        #-- Worksheet: 'Branchenbericht'
         info_period_WS  = info_period_WB['Branchenbericht']
-
-        # Lese Jahresabschlussberichte (xlwings)
-        #-- Worksheet: 'GuV'
         report_WS = report_WB.sheets['GuV']
-
-        # Umsatzkostenverfahren
         value_list = report_WS['F5:F14'].value
         value_list = np.around([0 if el is None else el for el in value_list], 3)
         info_period_WS.cell(row= 6, column=4+co).value = value_list[0]
@@ -1728,148 +1168,89 @@ with xw.App(visible=False) as app:
         info_period_WS.cell(row=10, column=4+co).value = value_list[5]
         info_period_WS.cell(row=11, column=4+co).value = value_list[6]
         info_period_WS.cell(row=12, column=4+co).value = value_list[7] + value_list[8]
-        # Speichere Finanz-Ergebnisse in Unternehmens-Daten
         fRes_COMP_h[0, co, PERIOD+OFFSET] = value_list[9]
-
-        # Periodenergebnis
         value_list = report_WS['C16:C27'].value
         value_list = np.around([0 if el is None else el for el in value_list], 3)
         info_period_WS.cell(row=14, column=4+co).value = value_list[0]
         info_period_WS.cell(row=15, column=4+co).value = value_list[1]
         info_period_WS.cell(row=16, column=4+co).value = value_list[3] + value_list[4]
         info_period_WS.cell(row=18, column=4+co).value = value_list[10]
-        # Speichere Finanz-Ergebnisse in Unternehmens-Daten
         fRes_COMP_h[1, co, PERIOD+OFFSET] = value_list[11]
-
-        # Economic Value Added (EVA)
         value_list = report_WS['K26:K28'].value
         value_list = np.around([0 if el is None else el for el in value_list], 3)
-        # Speichere Finanz-Ergebnisse in Unternehmens-Daten
         fRes_COMP_h[2, co, PERIOD+OFFSET] = value_list[0]
         fRes_COMP_h[3, co, PERIOD+OFFSET] = value_list[2]
-
-        # Lese Jahresabschlussberichte (xlwings)
-        #-- Worksheet: 'Bilanz'
         report_WS = report_WB.sheets['Bilanz']
-
-        # Aktiva
         value_list = report_WS['D5:D15'].value
         value_list = np.around([0 if el is None else el for el in value_list], 3)
         info_period_WS.cell(row=23, column=4+co).value = value_list[0]
         info_period_WS.cell(row=24, column=4+co).value = value_list[1]
         info_period_WS.cell(row=25, column=4+co).value = value_list[2]
         info_period_WS.cell(row=26, column=4+co).value = value_list[3]
-
         info_period_WS.cell(row=28, column=4+co
                             ).value =  value_list[6] + value_list[7]
         info_period_WS.cell(row=29, column=4+co).value = value_list[8]
         info_period_WS.cell(row=30, column=4+co).value = value_list[9]
         info_period_WS.cell(row=31, column=4+co).value = value_list[10]
-        # Speichere Finanz-Ergebnisse in Unternehmens-Daten
         fRes_COMP_h[5, co, PERIOD+OFFSET] = value_list[4]
         fDec_FIN_h[7, co, PERIOD+OFFSET] = value_list[10]
-
-        # Passiva
         value_list = report_WS['I5:I18'].value
         value_list = np.around([0 if el is None else el for el in value_list], 3)
         info_period_WS.cell(row=35, column=4+co
                             ).value =  value_list[0] + value_list[1]
         info_period_WS.cell(row=36, column=4+co).value = value_list[2]
         info_period_WS.cell(row=37, column=4+co).value = value_list[3]
-
         info_period_WS.cell(row=39, column=4+co).value =  value_list[6] + value_list[7]
         info_period_WS.cell(row=40, column=4+co).value =  value_list[8] + value_list[8]
         info_period_WS.cell(row=41, column=4+co).value = value_list[10]
-        # Speichere Finanz-Ergebnisse in Unternehmens-Daten
         fDec_FIN_h[6, co, PERIOD+OFFSET]  = value_list[10]
         fRes_COMP_h[6, co, PERIOD+OFFSET] = value_list[11]
         fRes_COMP_h[7, co, PERIOD+OFFSET] = value_list[13]
-
-        # Lese Jahresabschlussberichte (xlwings)
-        #-- Worksheet: 'LiquiditätsRechnung'
-        report_WS = report_WB.sheets['LiquiditätsRechnung']
-
-        # operativer Cash Flow (CFO)
+        report_WS = report_WB.sheets['Liquiditï¿½tsRechnung']
         value_list = report_WS['F17'].value
-        # Speichere Finanz-Ergebnisse in Unternehmens-Daten
         fRes_COMP_h[4, co, PERIOD+OFFSET] = value_list
-        
-        # Berechne Unternehmens-Rating
         (yield_spread, comp_rating) = mod.rating(
             fRes_COMP_h[4:8, co, PERIOD+OFFSET-1:PERIOD+OFFSET+1])
         fRes_COMP_h[8, co, PERIOD+OFFSET] = yield_spread
-
-        # Schreibe Unternehmens-Rating (xlwings)
-        #-- Worksheet: 'Finanzwerte'
         report_WS = report_WB.sheets['Finanzwerte']
-
-        # neues Rating
         report_WS['C7'].value  = comp_rating
         report_WS['G7'].value  = yield_spread
         info_period_WS.cell(row=64, column=4+co).value =  comp_rating
         info_period_WS.cell(row=65, column=4+co).value =  yield_spread
-
-        # Lese Personalbestand (xlwings)
-        #-- Worksheet: 'Personal'
         report_WS = report_WB.sheets['Personal']
         value_list = report_WS['G9'].value
-        # Speichere Finanz-Ergebnisse in Unternehmens-Daten
         pRes_HR_h[5, co, PERIOD+OFFSET] = value_list
-
-        # Lese Herstell- und Selbstkosten (xlwings)
-        #-- Worksheet: 'Kostenrechnung 2'
         report_WS = report_WB.sheets['Kostenrechnung 2']
         cost_1 = report_WS['H11'].value
         cost_2 = report_WS['H18'].value
         cost_3 = report_WS['I11'].value
         cost_4 = report_WS['I18'].value
-        # Schreibe Herstell- und Selbstkosten in Marktbericht
-        #-- Worksheet: 'Marktbericht SOLID'
         info_period_WS  = info_period_WB['Marktbericht SOLID']
         info_period_WS.cell(row=34, column=4+co).value = cost_1
         info_period_WS.cell(row=35, column=4+co).value = cost_2
-        #-- Worksheet: 'Marktbericht IDEAL'
         if PERIOD >= MARKET_2:
             info_period_WS  = info_period_WB['Marktbericht IDEAL']
             info_period_WS.cell(row=32, column=4+co).value = cost_3
             info_period_WS.cell(row=33, column=4+co).value = cost_4
-        # Speichere Stückkosten in Unternehmens-Daten
         pRes_costs_h[0, co, PERIOD+OFFSET] = cost_1
         pRes_costs_h[1, co, PERIOD+OFFSET] = cost_2
         pRes_costs_h[2, co, PERIOD+OFFSET] = cost_3
         pRes_costs_h[3, co, PERIOD+OFFSET] = cost_4
-
         report_WB.save()
-
-        # Bestimme das aktive Arbeitsblatt der Informations-Datei der Periode (openpyxl)
-        #-- Worksheet: aktueller 'KonjumkturAusblick P0x'
         info_period_WS = info_period_WB[f'KonjunkturAusblick P{PERIOD+1:0>2d}']
-
 del(app, value_list, yield_spread, comp_rating,
     cost_1, cost_2, cost_3, cost_4)
-
-# Speichere und schließe Informations-Datei der Periode
 for co in range(num_companies0):
-    # Speichere Informations-Datei des Unternehmens
     info_period_WB.save(filename = company_dir[co] + info_files[co])
 info_period_WB.save(filename = GMS_directory + info_period_file)
 info_period_WB.close()
-
-# Lösche temporäre und nicht mehr benötigte  Variablen
 del(info_period_WS, info_period_WB)
 del(report_files, report_WS, report_WB)
-#--------##--------##--------##--------#
-#-- 5. Zwischenzeit
 mean_time = time.time()
 print('')
 print('Speichere Excel-Berichte')
 print(round(mean_time - start_time, 1), f'({mean_time - mean_time0:.1f})')
 mean_time0 = mean_time
-
-
-#--------##--------##--------##--------##--------##--------##--------##--------#
-# Aktualisiere Informations-Datei der Unternehmen-Marktforschungsberichte
-#--------##--------##--------##--------##--------##--------##--------##--------#
 for co in range(num_companies0):
     info_WB  = load_workbook(filename = company_dir[co] + info_files[co])
     if mDec_GESAMT_h[3, co, PERIOD+OFFSET] == 0:
@@ -1878,28 +1259,18 @@ for co in range(num_companies0):
     if mDec_SOLID_h[7, co, PERIOD+OFFSET] == 0:
         info_WS = info_WB['Marktbericht SOLID']
         info_WB.remove(info_WS)
-    # Speichere und schließe Informations-Datei der Unternehmen
     info_WB.save(filename = company_dir[co] + info_files[co])
     info_WB.close()
-
-# Lösche temporäre und nicht mehr benötigte  Variablen
 del(co, num_companies0)
-# del(info_WS, info_WB)
 del(info_WB)
-
-
-#--------##--------##--------##--------##--------##--------##--------##--------#
-# Speichere aktualisierte Szenario- und Unternehmens-Daten
-#--------##--------##--------##--------##--------##--------##--------##--------#
-# -- Speichere Szenario-Arrays in binary-Format
 np.savez(GMS_directory + SCENARIO_FILE,
           Preisindex  = szenario['Preisindex'],
           Finanzen    = szenario['Finanzen'],
           Zinsen      = szenario['Zinsen'],
           Sondermarkt = szenario['Sondermarkt'],
           MarktVol    = szenario['MarktVol'],
-          eQI_SOLID   = szenario['eQI_SOLID'],      
-          eQI_IDEAL   = szenario['eQI_IDEAL'],        
+          eQI_SOLID   = szenario['eQI_SOLID'],
+          eQI_IDEAL   = szenario['eQI_IDEAL'],
           MengeHStoff = szenario['MengeHStoff'],
           PreisHStoff = szenario['PreisHStoff'],
           MengeMat1   = szenario['MengeMat1'],
@@ -1919,10 +1290,7 @@ np.savez(GMS_directory + SCENARIO_FILE,
           AnlagenM    = szenario['AnlagenM'],
           AnlagenL    = szenario['AnlagenL'],
           AV_BGA      = szenario['AV_BGA'])
-
-# Speichere aktualisierte Unternehmens-Daten
 np.savez(GMS_directory + COMPANY_FILE,
-         # Marketing 
          mDec_SOLID  = mDec_SOLID_h,
          mDec_IDEAL  = mDec_IDEAL_h,
          mDec_GESAMT = mDec_GESAMT_h,
@@ -1930,38 +1298,25 @@ np.savez(GMS_directory + COMPANY_FILE,
          cSat_SOLID  = cSat_SOLID_h,
          mMix_IDEAL  = mMix_IDEAL_h,
          cSat_IDEAL  = cSat_IDEAL_h,
-         # Fertigung / Personal / Beschaffung
-         pDec_SOLID  = pDec_SOLID_h,  
+         pDec_SOLID  = pDec_SOLID_h,
          pDec_IDEAL  = pDec_IDEAL_h,
          pRes_TA     = pRes_TA_h,
          pDec_HR     = pDec_HR_h,
          pRes_HR     = pRes_HR_h,
          pRes_costs  = pRes_costs_h,
-         # Finanzen / Rechnungswesen / Erfolg
          fDec_FIN    = fDec_FIN_h,
          fRes_COMP   = fRes_COMP_h)
-
 del(szenario)
 del(mDec_SOLID_h, mDec_IDEAL_h, mDec_GESAMT_h,
     mMix_SOLID_h, cSat_SOLID_h, mMix_IDEAL_h, cSat_IDEAL_h,
     pDec_SOLID_h, pDec_IDEAL_h, pRes_TA_h, pDec_HR_h, pRes_HR_h, pRes_costs_h,
     fDec_FIN_h, fRes_COMP_h)
-
-#--------##--------##--------##--------#
-#-- Endzeit
 end_time = time.time()
 print('')
 print('Aktualisiere Informations-Datei')
 print(round(end_time - start_time, 1), f'({end_time - mean_time0:.1f})')
 print('Gesamt: ', round(end_time - start_time, 1))
-
-# Lösche temporäre und nicht mehr benötigte  Variablen
 del(start_time, mean_time, mean_time0, end_time)
 del(MARKET_0, MARKET_1, MARKET_2, MARKET_3, IDEAL_RD, NUM_CELLS, UL_CELLS)
 del(info_files, info_period_file)
 del(version_dir, scenario_dir, company_dir)
-
-
-#--------##--------##--------##--------##--------##--------##--------##--------#
-# Aktualisiere Auswertungsberichte/-diagramme
-#--------##--------##--------##--------##--------##--------##--------##--------#
