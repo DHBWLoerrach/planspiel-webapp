@@ -33,14 +33,14 @@ jwt = JWTManager(app)
 
 GameTeamAssociation = db.Table('gameteams',
     db.Column('game_id', db.Integer, db.ForeignKey('games.id'), primary_key=True),
-    db.Column('team_id', db.Integer, db.ForeignKey('teams.id'), primary_key=True)
+    db.Column('teams_name', db.String(100), db.ForeignKey('teams.name'), primary_key=True),
+    db.Column('locked', db.Boolean, default=False)
 )
 
 # Team Model/Schema
 class Team(db.Model):
     __tablename__ = 'teams'  # Specify the table name here
-    id = db.Column(db.Integer, primary_key=True)
-    name = db.Column(db.String(100), unique=True)
+    name = db.Column(db.String(100), unique=True, primary_key=True)
     password = db.Column(db.String(100))
 
 class TeamSchema(ma.Schema):
@@ -69,6 +69,7 @@ class Game(db.Model):
     ideal_rd = db.Column(db.Integer)
     cost_industry_report = db.Column(db.Float)
     cost_market_report = db.Column(db.Float)
+    current_period = db.Column(db.Integer, default=0)
 
     # Relationships
     teams = db.relationship('Team', secondary=GameTeamAssociation, lazy='subquery',
@@ -77,7 +78,7 @@ class Game(db.Model):
 
 class GameSchema(ma.Schema):
     class Meta:
-        fields = ('id', 'name', 'status')
+        fields = ('id', 'name', 'status', 'current_period')
 
 game_schema = GameSchema()
 games_schema = GameSchema(many=True)
@@ -114,14 +115,15 @@ def register_team():
 def login():
     name = request.json.get('name', None)
     password = request.json.get('password', None)
-
     team = Team.query.filter_by(name=name).first()
     if team and team.password == password:
         access_token = create_access_token(identity=name)
+        print(access_token)
         is_gamemaster = name.lower() == "gamemaster"
         return jsonify(access_token=access_token, is_gamemaster=is_gamemaster), 200
 
     return jsonify({"msg": "Invalid team name or password"}), 401
+
 
 @app.route('/gamemaster', methods=['GET'])
 @jwt_required()
@@ -146,7 +148,7 @@ def register_team_by_gamemaster():
     # Get team data from the request
     name = request.json['name']
     # Optionally set a default password or create one
-    password = 'defaultPassword'  # It's better to generate a random password
+    password = request.json.get('password', 'defaultPassword')  # It's better to generate a random password
 
     # Check if team already exists
     existing_team = Team.query.filter_by(name=name).first()
@@ -207,9 +209,9 @@ def register_game():
     db.session.flush()
 
     # Retrieve team IDs from the request and associate them with the game
-    team_ids = request.json.get('team_ids', [])
-    for team_id in team_ids:
-        team = Team.query.get(team_id)
+    team_names = request.json.get('team_names', [])
+    for team_name in team_names:
+        team = Team.query.get(team_name)
         if team:
             new_game.teams.append(team)
 
@@ -253,7 +255,7 @@ def get_games():
             'id': game.id,
             'name': game.name,
             'status': game.status,
-            'teams': [{'id': team.id, 'name': team.name} for team in game.teams]
+            'teams': [{'name': team.name} for team in game.teams]
         })
     return jsonify(games_data)
 
@@ -266,20 +268,38 @@ def get_teams():
     teams_data = []
     for team in teams:
         team_info = {
-            'id': team.id,
             'name': team.name,
             'games': [{'id': game.id, 'name': game.name} for game in team.games]
         }
         teams_data.append(team_info)
     return jsonify(teams_data)
 
-@app.route('/teams/<int:team_id>', methods=['DELETE'])
+@app.route('/teams/<string:team_name>', methods=['DELETE'])
 @jwt_required()
-def delete_team(team_id):
-    team = Team.query.get_or_404(team_id)
+def delete_team(team_name):
+    team = Team.query.get_or_404(team_name)
     db.session.delete(team)
     db.session.commit()
     return jsonify({'message': 'Team deleted successfully'}), 200
+
+@app.route('/teams/<string:team_name>/change_password', methods=['PUT'])
+@jwt_required()
+def change_team_password(team_name):
+    team = Team.query.filter_by(name=team_name).first_or_404()
+    print(team)
+
+    # Extract new password from the request
+    new_password = request.json.get('password', None)
+
+    if new_password is None:
+        return jsonify({'message': 'New password not provided'}), 400
+
+    # Update the team's password
+    team.password = new_password
+    db.session.commit()
+
+    return jsonify({'message': f'Password for team {team_name} updated successfully'}), 200
+
 
 # Create a Turn
 @app.route('/turn', methods=['POST'])
@@ -312,6 +332,110 @@ def save_file():
         df.to_excel(writer, index=False)
     output.seek(0)
     return send_file(output, attachment_filename='updated_file.xlsx', as_attachment=True)
+
+@app.route('/games-for-team', methods=['GET'])
+@jwt_required()
+def get_games_for_team():
+    current_user = get_jwt_identity()
+    team = Team.query.filter_by(name=current_user).first()
+    print(current_user, team)
+    if team:
+        games = Game.query.filter(Game.teams.any(name=team.name)).all()
+        return jsonify(games_schema.dump(games))
+    else:
+        return jsonify({"msg": "Team not found"}), 404
+
+@app.route('/check-lock-status', methods=['GET'])
+@jwt_required()
+def check_lock_status():
+    current_team = request.args.get('teamname')
+    game_id = request.args.get('game_id')
+
+    # Query the GameTeamAssociation
+    game_team = db.session.query(GameTeamAssociation).filter(
+        GameTeamAssociation.c.teams_name == current_team,
+        GameTeamAssociation.c.game_id == game_id
+    ).first()
+
+    if game_team:
+        return jsonify({'locked': game_team.locked})
+    else:
+        return jsonify({'message': 'Game or team not found'}), 404
+
+
+@app.route('/submit-turn', methods=['POST'])
+@jwt_required()
+def submit_turn():
+    current_team = get_jwt_identity()  # Get the team name from the JWT token
+    game_id = request.json.get('game_id')  # Extract the game ID from the request
+
+    # Check the lock status for the team and game combination
+    game_team = db.session.query(GameTeamAssociation).filter(
+        GameTeamAssociation.c.teams_name == current_team,
+        GameTeamAssociation.c.game_id == game_id
+    ).first()
+
+    if game_team and game_team.locked:
+        return jsonify({"message": "Submission locked for this team"}), 403
+
+    new_turn = Turn(
+        game_id=game_id,
+        team_name=current_team,
+        inputSolidVerkaufspreisAusland=request.json.get('inputSolidVerkaufspreisAusland'),
+        inputIdealVerkaufspreisAusland=request.json.get('inputIdealVerkaufspreisAusland'),
+        inputSolidVerkaufspreisInland=request.json.get('inputSolidVerkaufspreisInland'),
+        inputIdealVerkaufspreisInland=request.json.get('inputIdealVerkaufspreisInland'),
+        inputSolidFETechnik=request.json.get('inputSolidFETechnik'),
+        inputIdealFETechnik=request.json.get('inputIdealFETechnik'),
+        inputSolidFEHaptik=request.json.get('inputSolidFEHaptik'),
+        inputIdealFEHaptik=request.json.get('inputIdealFEHaptik'),
+        inputSolidProduktwerbungInland=request.json.get('inputSolidProduktwerbungInland'),
+        inputIdealProduktwerbungInland=request.json.get('inputIdealProduktwerbungInland'),
+        inputSolidProduktwerbungAusland=request.json.get('inputSolidProduktwerbungAusland'),
+        inputIdealProduktwerbungAusland=request.json.get('inputIdealProduktwerbungAusland'),
+        inputSolidPR=request.json.get('inputSolidPR'),
+        inputIdealPR=request.json.get('inputIdealPR'),
+        inputSolidLiefermengeSondermarkt=request.json.get('inputSolidLiefermengeSondermarkt'),
+        inputIdealLiefermengeSondermarkt=request.json.get('inputIdealLiefermengeSondermarkt'),
+        inputSolidLiefermengeAusland=request.json.get('inputSolidLiefermengeAusland'),
+        inputIdealLiefermengeAusland=request.json.get('inputIdealLiefermengeAusland'),
+        inputSolidVertriebspersonalInland=request.json.get('inputSolidVertriebspersonalInland'),
+        inputIdealVertriebspersonalInland=request.json.get('inputIdealVertriebspersonalInland'),
+        inputSolidVertriebspersonalAusland=request.json.get('inputSolidVertriebspersonalAusland'),
+        inputIdealVertriebspersonalAusland=request.json.get('inputIdealVertriebspersonalAusland'),
+        inputSolidHilfsstoffe=request.json.get('inputSolidHilfsstoffe'),
+        inputIdealHilfsstoffe=request.json.get('inputIdealHilfsstoffe'),
+        inputSolidMaterialS=request.json.get('inputSolidMaterialS'),
+        inputMaterialI=request.json.get('inputMaterialI'),
+        inputFertigungspersonal=request.json.get('inputFertigungspersonal'),
+        inputPersonalentwicklung=request.json.get('inputPersonalentwicklung'),
+        inputGehaltsaufschlag=request.json.get('inputGehaltsaufschlag'),
+        inputInvestitionenBGA=request.json.get('inputInvestitionenBGA'),
+        sumVerkaufspreisAusland=request.json.get('sumVerkaufspreisAusland'),
+        sumFETechnik=request.json.get('sumFETechnik'),
+        sumFEHaptik=request.json.get('sumFEHaptik'),
+        sumProduktbewerbungInland=request.json.get('sumProduktbewerbungInland'),
+        sumProduktbewerbungAusland=request.json.get('sumProduktbewerbungAusland'),
+        sumPR=request.json.get('sumPR'),
+        sumLiefermengeSondermarkt=request.json.get('sumLiefermengeSondermarkt'),
+        sumLiefermengeAusland=request.json.get('sumLiefermengeAusland'),
+        sumVertriebspersonalInland=request.json.get('sumVertriebspersonalInland'),
+        sumVertriebspersonalAusland=request.json.get('sumVertriebspersonalAusland'),
+        sumBetriebsstoffe=request.json.get('sumBetriebsstoffe'),
+        sumMaterialS=request.json.get('sumMaterialS'),
+        sumMaterialI=request.json.get('sumMaterialI'),
+        gesamtFertigungspersonal=request.json.get('gesamtFertigungspersonal'),
+        gesamtPersonalentwicklung=request.json.get('gesamtPersonalentwicklung'),
+        gesamtGehaltsaufschlag=request.json.get('gesamtGehaltsaufschlag'),
+        gesamtInvestitionenBGA=request.json.get('gesamtInvestitionenBGA'),
+    )
+
+    db.session.add(new_turn)
+    db.session.commit()
+
+    return jsonify({"message": "Turn submitted successfully"}), 201
+
+
 
 # Run Server
 if __name__ == '__main__':

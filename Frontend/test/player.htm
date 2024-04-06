@@ -1,0 +1,879 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>first table</title>
+    <!-- Add Select2 CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/select2/dist/css/select2.min.css" rel="stylesheet" />
+    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500&display=swap" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/select2/dist/css/select2.min.css" rel="stylesheet" />
+    <style>
+        body {
+            font-family: "Roboto", sans-serif;
+            background-color: #2f3136;
+            color: #ffffff;
+            margin: 0;
+            padding: 20px;
+        }
+
+        h2, h3 {
+            color: #ffffff;
+        }
+
+        button {
+            background-color: #7289DA;
+            color: #ffffff;
+            padding: 10px 15px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            margin-bottom: 20px;
+            transition: background-color 0.3s ease;
+        }
+
+        button:hover {
+            background-color: #677bc4;
+        }
+
+        form {
+            background-color: #36393F;
+            padding: 20px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+        }
+
+        label {
+            color: #b9bbbe;
+        }
+
+        input[type="number"],
+        input[type="password"],
+        select {
+            width: 100%;
+            padding: 10px;
+            margin: 10px 0;
+            background-color: #40444B;
+            border: 1px solid #202225;
+            border-radius: 4px;
+            color: #ffffff;
+        }
+
+        .select2-container .select2-selection--multiple {
+            background-color: #40444B;
+            border: 1px solid #202225;
+        }
+
+        .select2-dropdown {
+            background-color: #40444B;
+            color: #ffffff;
+        }
+
+        .select2-results__option {
+            padding-right: 20px;
+            background-color: #40444B;
+            color: #ffffff;
+        }
+
+        .select2-results__option--highlighted[aria-selected] {
+            background-color: #7289DA;
+        }
+        .fancy-table input[type="number"] {
+            width: 95%; /* Adjust the percentage as needed */
+            box-sizing: border-box;
+        }
+
+        .fancy-table {
+            width: 100%; /* Adjust the width as needed */
+            border-collapse: collapse;
+        }
+
+        .bottom-border {
+            border-bottom: 2px solid black; /* For specific rows */
+            background-color: rgba(1, 1, 122, 0.1);
+        }
+
+        .modal {
+            display: none;
+            position: fixed;
+            z-index: 1;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            overflow: auto;
+            background-color: rgba(0, 0, 0, 0.4);
+        }
+
+        .modal-content {
+            background-color: #36393F;
+            margin: 15% auto; /* Center the modal */
+            padding: 20px;
+            border: 1px solid #202225;
+            border-radius: 8px;
+            width: 30%; /* Adjust as necessary */
+            color: #ffffff;
+            box-sizing: border-box; /* Include padding in width calculation */
+        }
+
+        .modal-footer {
+            padding: 10px 20px;
+            text-align: right;
+            background-color: #36393F; /* Same as modal-content */
+            border-bottom-left-radius: 8px; /* Continue modal border radius */
+            border-bottom-right-radius: 8px;
+            border-top: 1px solid #202225; /* Border between content and footer */
+        }
+
+        .modal-footer button {
+            background-color: #7289DA;
+            color: #ffffff;
+            padding: 10px 15px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            transition: background-color 0.3s ease;
+        }
+
+        .modal select {
+            width: 100%;
+            padding: 10px;
+            margin: 10px 0;
+            background-color: #40444B;
+            border: 1px solid #202225;
+            border-radius: 4px;
+            color: #ffffff;
+        }
+
+        .button-container {
+            position: fixed;
+            bottom: 20px;
+            width: 97%;
+            text-align: right; /* Center the button */
+        }
+
+        .button-container button {
+            margin-left: 10px; /* Add spacing between buttons */
+        }
+    </style>
+</head>
+<body>
+    <!-- Modal Structure -->
+    <div id="gameSelectModal" class="modal" style="display: none;">
+        <div class="modal-content">
+            <h4>Select a Game</h4>
+            <select id="gameSelect"></select>
+            <button id="selectGameButton">Select Game</button>
+        </div>
+    </div>
+
+    <table class="fancy-table">
+        <tbody>
+            <tr>
+                <td><h1>Wilkommen in Ihrer Teamansicht <span id="team"></span></h1></td>
+                <td><h1>Periode: <span id="period"></span></h1></td>
+            </tr>
+        </tbody>
+    </table>
+    <br>
+    <table>
+        <tbody>
+            <tr valign="top">
+                <td>
+                    <h2>Marketing</h2>
+                    <table class="fancy-table" id="marketingTable">
+                        <tbody>
+                            <tr class="bottom-border" height="19">
+                                <td>Preispolitik</td>
+                                <td></td>
+                                <td></td>
+                                <td style="text-align: left;">SOLID</td>
+                                <td style="text-align: left;">IDEAL</td>
+                                <td></td>
+                            </tr>
+                            <tr height="19">
+                                <td>Verkaufspreis: Inland</td>
+                                <td></td>
+                                <td style="text-align: left;">EUR/Stk.</td>
+                                <td><input type="number" id="inputSolidVerkaufspreisInland"></td>
+                                <td><input type="number" id="inputIdealVerkaufspreisInland"></td>
+                                <td></td>
+                            </tr>
+                            <tr height="19">
+                                <td>Verkaufspreis: Ausland</td>
+                                <td></td>
+                                <td style="text-align: left;">FCU/Stk.</td>
+                                <td><input type="number" id="inputSolidVerkaufspreisAusland"></td>
+                                <td><input type="number" id="inputIdealVerkaufspreisAusland"></td>
+                                <td></td>
+                            </tr>
+                            <tr height="30">
+                            </tr>
+                            <tr class="bottom-border" height="19">
+                                <td>Produktpolitik/Produktentwicklung</td>
+                                <td></td>
+                                <td></td>
+                                <td style="text-align: left;">SOLID</td>
+                                <td style="text-align: left;">IDEAL</td>
+                                <td style="text-align: left;">Gesamt</td>
+                            </tr>
+                            <tr height="19">
+                                <td>F&E in Technik</td>
+                                <td></td>
+                                <td style="text-align: left;">Tsd. EUR</td>
+                                <td><input type="number" id="inputSolidFETechnik"></td>
+                                <td><input type="number" id="inputIdealFETechnik"></td>
+                                <td><span id="sumFETechnik"></span></td>
+                            </tr>
+                            <tr height="19">
+                                <td>F&E in Haptik</td>
+                                <td></td>
+                                <td style="text-align: left;">Tsd. EUR</td>
+                                <td><input type="number" id="inputSolidFEHaptik"></td>
+                                <td><input type="number" id="inputIdealFEHaptik"></td>
+                                <td><span id="sumFEHaptik"></span></td>
+                            </tr>
+                            <tr height="30">
+                            </tr>
+                            <tr class="bottom-border" height="19">
+                                <td>Kommunikationspolitik</td>
+                                <td></td>
+                                <td></td>
+                                <td style="text-align: left;">SOLID</td>
+                                <td style="text-align: left;">IDEAL</td>
+                                <td style="text-align: left;">Gesamt</td>
+                            </tr>
+                            <tr height="19">
+                                <td>Produktwerbung: Inland</td>
+                                <td></td>
+                                <td style="text-align: left;">Tsd. EUR</td>
+                                <td><input type="number" id="inputSolidProduktwerbungInland"></td>
+                                <td><input type="number" id="inputIdealProduktwerbungInland"></td>
+                                <td><span id="sumProduktbewerbungInland"></span></td>
+                            </tr>
+                            <tr height="19">
+                                <td>Produktwerbung: Ausland</td>
+                                <td></td>
+                                <td style="text-align: left;">Tsd. FCU</td>
+                                <td><input type="number" id="inputSolidProduktwerbungAusland"></td>
+                                <td><input type="number" id="inputIdealProduktwerbungAusland"></td>
+                                <td><span id="sumProduktbewerbungAusland"></span></td>
+                            </tr>
+                            <tr3 height="19">
+                                <td>Öffentlichkeitsarbeit/PR</td>
+                                <td></td>
+                                <td style="text-align: left;">Tsd. EUR</td>
+                                <td><input type="number" id="inputSolidPR"></td>
+                                <td><input type="number" id="inputIdealPR"></td>
+                                <td><span id="sumPR"></span></td>
+                            </tr3>
+                            <tr height="30">
+                            </tr>
+                            <tr class="bottom-border" height="19">
+                                <td>Distiributionspolitik</td>
+                                <td></td>
+                                <td></td>
+                                <td style="text-align: left;">SOLID</td>
+                                <td style="text-align: left;">IDEAL</td>
+                                <td style="text-align: left;">Gesamt</td>
+                            </tr>
+                            <tr height="19">
+                                <td>Liefermenge: Sonmdermarkt</td>
+                                <td></td>
+                                <td style="text-align: left;">Stk.</td>
+                                <td><input type="number" id="inputSolidLiefermengeSondermarkt"></td>
+                                <td><input type="number" id="inputIdealLiefermengeSondermarkt"></td>
+                                <td><span id="sumLiefermengeSondermarkt"></span></td>
+                            </tr>
+                            <tr height="19">
+                                <td>Liefermenge: Ausland</td>
+                                <td></td>
+                                <td style="text-align: left;">Stk.</td>
+                                <td><input type="number" id="inputSolidLiefermengeAusland"></td>
+                                <td><input type="number" id="inputIdealLiefermengeAusland"></td>
+                                <td><span id="sumLiefermengeAusland"></span></td>
+                            </tr>
+                            <tr height="19">
+                                <td>Vertriebspersonal: Inland</td>
+                                <td></td>
+                                <td style="text-align: left;">Anzahl MA</td>
+                                <td><input type="number" id="inputSolidVertriebspersonalInland"></td>
+                                <td><input type="number" id="inputIdealVertriebspersonalInland"></td>
+                                <td><span id="sumVertriebspersonalInland"></span></td>
+                            </tr>
+                            <tr height="19">
+                                <td>Vertriebspersonal: Ausland</td>
+                                <td></td>
+                                <td style="text-align: left;">Anzahl MA</td>
+                                <td><input type="number" id="inputSolidVertriebspersonalAusland"></td>
+                                <td><input type="number" id="inputIdealVertriebspersonalAusland"></td>
+                                <td><span id="sumVertriebspersonalAusland"></span></td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </td>
+                <td width="3%"></td>
+                <td>
+                    <h2>Beschaffung und Fertigung</h2>
+                    <table class="fancy-table" id="beschaffunfFertigungTable">
+                        <tbody>
+                            <tr class="bottom-border" height="19">
+                                <td>Produktionsplan</td>
+                                <td></td>
+                                <td>SOLID</td>
+                                <td>IDEAL</td>
+                                <td></td>
+                            </tr>
+                            <tr height="19">
+                                <td>Fertigungsmengen (Planmengen)</td>
+                                <td>Stk.</td>
+                                <td><input type="number" id="inputSolidFertigungsmengen"></td>
+                                <td><input type="number" id="inputIdealFertigungsmengen"></td>
+                                <td></td>
+                            </tr>
+                            <tr height="30">
+                            </tr>
+                            <tr class="bottom-border" height="19">
+                                <td>Materialeinkauf</td>
+                                <td></td>
+                                <td>SOLID</td>
+                                <td>IDEAL</td>
+                                <td>Gesamt</td>
+                            </tr>
+                            <tr height="19">
+                                <td>Hilfsstoffe 'H'</td>
+                                <td>Stk.</td>
+                                <td><input type="number" id="inputSolidHilfsstoffe"></td>
+                                <td><input type="number" id="inputIdealHilfsstoffe"></td>
+                                <td><span id="sumBetriebsstoffe"></span></td>
+                            </tr>
+                            <tr height="19">
+                                <td>Material 'S' (SOLID)</td>
+                                <td>Stk.</td>
+                                <td><input type="number" id="inputSolidMaterialS"></td>
+                                <td></td>
+                                <td><span id="sumMaterialS"></span></td>
+                            </tr>
+                            <tr height="19">
+                                <td>Material 'I' (IDEAL)</td>
+                                <td>Stk.</td>
+                                <td></td>
+                                <td><input type="number" id="inputMaterialI"></td>
+                                <td><span id="sumMaterialI"></span></td>
+                            </tr>
+                            <tr height="30">
+                            </tr>
+                            <tr class="bottom-border" height="19">
+                                <td>Technische Anlagen</td>
+                                <td></td>
+                                <td>neu</td>
+                                <td>alt</td>
+                                <td></td>
+                            </tr>
+                            <tr height="19">
+                                <td>Anlagen (Werkstätte 01)</td>
+                                <td>Anlage</td>
+                                <td>
+                                    <select id="selectSolidAnlagenWerkstaette01">
+                                        <option value="--">- - - - -</option>
+                                    </select>
+                                </td>
+                                <td><span id="oldWerkstaette01"></span></td>
+                                <td></td>
+                            </tr>
+                            <tr height="19">
+                                <td>Anlagen (Werkstätte 02)</td>
+                                <td>Anlage</td>
+                                <td>
+                                    <select id="selectSolidAnlagenWerkstaette02">
+                                        <option value="--">- - - - -</option>
+                                    </select>
+                                </td>
+                                <td><span id="oldWerkstaette02"></span></td>
+                                <td></td>
+                            </tr>
+                            <tr height="19">
+                                <td>Anlagen (Werkstätte 03)</td>
+                                <td>Anlage</td>
+                                <td>
+                                    <select id="selectSolidAnlagenWerkstaette03">
+                                        <option value="--">- - - - -</option>
+                                    </select>
+                                </td>
+                                <td><span id="oldWerkstaette03"></span></td>
+                                <td></td>
+                            </tr>
+                            <tr height="19">
+                                <td>Anlagen (Werkstätte 04)</td>
+                                <td>Anlage</td>
+                                <td>
+                                    <select id="selectSolidAnlagenWerkstaette04">
+                                        <option value="--">- - - - -</option>
+                                    </select>
+                                </td>
+                                <td><span id="oldWerkstaette04"></span></td>
+                                <td></td>
+                            </tr>
+                            <tr height="19">
+                                <td>Anlagen (Werkstätte 05)</td>
+                                <td>Anlage</td>
+                                <td>
+                                    <select id="selectSolidAnlagenWerkstaette05">
+                                        <option value="--">- - - - -</option>
+                                    </select>
+                                </td>
+                                <td><span id="oldWerkstaette05"></span></td>
+                                <td></td>
+                            </tr>
+                            <tr height="19">
+                                <td>Anlagen (Werkstätte 06)</td>
+                                <td>Anlage</td>
+                                <td>
+                                    <select id="selectSolidAnlagenWerkstaette06">
+                                        <option value="--">- - - - -</option>
+                                    </select>
+                                </td>
+                                <td><span id="oldWerkstaette06"></span></td>
+                                <td></td>
+                            </tr>
+                            <tr height="19">
+                                <td>Anlagen (Werkstätte 07)</td>
+                                <td>Anlage</td>
+                                <td>
+                                    <select id="selectSolidAnlagenWerkstaette07">
+                                        <option value="--">- - - - -</option>
+                                    </select>
+                                </td>
+                                <td><span id="oldWerkstaette07"></span></td>
+                                <td></td>
+                            </tr>
+                            <tr height="19">
+                                <td>Anlagen (Werkstätte 08)</td>
+                                <td>Anlage</td>
+                                <td>
+                                    <select id="selectSolidAnlagenWerkstaette08">
+                                        <option value="--">- - - - -</option>
+                                    </select>
+                                </td>
+                                <td><span id="oldWerkstaette08"></span></td>
+                                <td></td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </td>
+                <td width="3%"></td>
+                <td>
+                    <h2>Finanzwirtschaft</h2>
+                    <table class="fancy-trable" id="finanzTable">
+                        <tbody>
+                            <tr class="bottom-border" height="19">
+                                <td>Kreditaufnahme</td>
+                                <td></td>
+                                <td>Gesamt</td>
+                                <td></td>
+                            </tr>
+                            <tr height="19">
+                                <td>'S'-Darlehen (kurzfristig: 1 Periode)</td>
+                                <td>Tsd. EUR</td>
+                                <td><input type="number" id="inputDarlehenS"></td>
+                            </tr>
+                            <tr height="19">
+                                <td>'M'-Darlehen (langfristig: 5 Perioden)</td>
+                                <td>Tsd. EUR</td>
+                                <td><input type="number" id="inputDarlehenM"></td>
+                            </tr>
+                            <tr height="19">
+                                <td>'L'-Darlehen (langfristig: 10 Perioden)</td>
+                                <td>Tsd. EUR</td>
+                                <td><input type="number" id="inputDarlehenL"></td>
+                            </tr>
+                            <tr height="30">
+                            </tr>
+                            <tr class="bottom-border" height="19"0>
+                                <td>Mittelverwendung</td>
+                                <td></td>
+                                <td>Gesamt</td>
+                            </tr>
+                            <tr height="19">
+                                <td>Festgeldanlagen (kurzfristig: 1 Periode)</td>
+                                <td>Tsd. EUR</td>
+                                <td><input type="number" id="inputFestgeldDarlehen"></td>
+                            </tr>
+                            <tr height="19">
+                                <td>Dividenden/Aktienrückkäufe (Planwert)</td>
+                                <td>Tsd. EUR</td>
+                                <td><input type="number" id="inputDividenden"></td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </td>
+            </tr>
+            <tr height="30"></tr>
+            <tr valign="top">
+                <td>
+                    <h2>Marktforschung</h2>
+                    <table class="fancy-table" id="marktTable">
+                        <tbody>
+                            <tr class="bottom-border" height="19">
+                                <td></td>
+                                <td>Forschungsberichte</td>
+                                <td></td>
+                                <td>SOLID</td>
+                                <td>IDEAL</td>
+                                <td>Gesamt</td>
+                                <td></td>
+                            </tr>
+                            <tr height="19">
+                                <td></td>
+                                <td>Branchenbericht</td>
+                                <td>(Ja/Nein)</td>
+                                <td></td>
+                                <td></td>
+                                <td>
+                                    <select id="selectSolidBranchenbericht">
+                                        <option value="Ja">Ja</option>
+                                        <option value="Nein">Nein</option>
+                                    </select>
+                                </td>
+                                <td></td>
+                            </tr>
+                            <tr>
+                                <td></td>
+                                <td>Marktbericht</td>
+                                <td>(Ja/Nein)</td>
+                                <td>
+                                    <select id="selectIdealMarktbericht">
+                                        <option value="Ja">Ja</option>
+                                        <option value="Nein">Nein</option>
+                                    </select>
+                                </td>
+                                <td>
+                                    <select id="selectSolidMarktbericht">
+                                        <option value="Ja">Ja</option>
+                                        <option value="Nein">Nein</option>
+                                    </select>
+                                </td>
+                                <td></td>
+                                <td></td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </td>
+                <td width="3%"></td>
+                <td>
+                    <h2>Human Resources</h2>
+                    <table class="fancy-table" id="hrTable">
+                        <tbody>
+                            <tr class="bottom-border" height="19">
+                                <td>Personalmanagement</td>
+                                <td></td>
+                                <td></td>
+                                <td></td>
+                                <td></td>
+                                <td>Gesamt</td>
+                            </tr>
+                            <tr height="19">
+                                <td>Fertigungspersonal (Planbestand)</td>
+                                <td>Anzahl MA</td>
+                                <td></td>
+                                <td></td>
+                                <td><input type="number" id="inputFertigungspersonal"></td>
+                                <td><span id="gesamtFertigungspersonal"></span></td>
+                            </tr>
+                            <tr height="19">
+                                <td>Personalentwicklung</td>
+                                <td>Tsd. EUR</td>
+                                <td></td>
+                                <td></td>
+                                <td><input type="number" id="inputPersonalentwicklung"></td>
+                                <td><span id="gesamtPersonalentwicklung"></span></td>
+                            </tr>
+                            <tr height="19">
+                                <td>Gehaltsaufschlag (freiwillig)</td>
+                                <td>%</td>
+                                <td></td>
+                                <td></td>
+                                <td><input type="number" id="inputGehaltsaufschlag"></td>
+                                <td><span id="gesamtGehaltsaufschlag"></span></td>
+                            </tr>
+                            <tr height="19">
+                                <td>Investitionen in die BGA (freiwillig)</td>
+                                <td>Tsd. EUR</td>
+                                <td></td>
+                                <td></td>
+                                <td><input type="number" id="inputInvestitionenBGA"></td>
+                                <td><span id="gesamtInvestitionenBGA"></span></td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </td>
+                <td width="3%"></td>
+                <td></td>
+            </tr>
+        </tbody>
+    </table>
+
+    <div class="button-container">
+        <button id="submitBtn">Submit</button>
+        <button id="logoutBtn">Logout</button>
+    </div>
+
+    <script>
+        let games = []; // Store the games data fetched from the API
+
+        const sumConfig = {
+            "sumFETechnik": ["inputSolidFETechnik", "inputIdealFETechnik"],
+            "sumFEHaptik": ["inputSolidFEHaptik", "inputIdealFEHaptik"],
+            "sumProduktbewerbungInland": ["inputSolidProduktwerbungInland", "inputIdealProduktwerbungInland"],
+            "sumProduktbewerbungAusland": ["inputSolidProduktwerbungAusland", "inputIdealProduktwerbungAusland"],
+            "sumPR": ["inputSolidPR", "inputIdealPR"],
+            "sumLiefermengeSondermarkt": ["inputSolidLiefermengeSondermarkt", "inputIdealLiefermengeSondermarkt"],
+            "sumLiefermengeAusland": ["inputSolidLiefermengeAusland", "inputIdealLiefermengeAusland"],
+            "sumVertriebspersonalInland": ["inputSolidVertriebspersonalInland", "inputIdealVertriebspersonalInland"],
+            "sumVertriebspersonalAusland": ["inputSolidVertriebspersonalAusland", "inputIdealVertriebspersonalAusland"],
+            "sumBetriebsstoffe": ["inputSolidHilfsstoffe", "inputIdealHilfsstoffe"],
+            "sumMaterialS": ["inputSolidMaterialS"],
+            "sumMaterialI": ["inputMaterialI"],
+            "gesamtFertigungspersonal": ["inputFertigungspersonal"],
+            "gesamtPersonalentwicklung": ["inputPersonalentwicklung"],
+            "gesamtGehaltsaufschlag": ["inputGehaltsaufschlag"],
+            "gesamtInvestitionenBGA": ["inputInvestitionenBGA"]
+        };
+
+
+        window.onload = function() {
+            // Retrieve the stored login name
+            var loginName = localStorage.getItem('login_name');
+
+            // Check if loginName exists and then set it
+            if(loginName) {
+                document.getElementById('team').textContent = loginName;
+            }
+        };
+
+        document.addEventListener("DOMContentLoaded", function() {
+            fetchGamesForTeam();
+            document.getElementById('selectGameButton').addEventListener('click', gameSelectionMade);
+
+            // Attach event listeners to all number inputs
+            document.querySelectorAll('input[type="number"]').forEach(inputElement => {
+                inputElement.addEventListener('input', () => {
+                    // Check if this input ID is part of sumConfig
+                    let relevantSumId = findSumIdForInput(inputElement.id);
+                    if (relevantSumId) {
+                        updateSum(relevantSumId);
+                    }
+                });
+            });
+
+            // Set all number inputs to a default value of 0
+            const numberInputs = document.querySelectorAll('input[type="number"]');
+            numberInputs.forEach(input => {
+                input.value = '0';
+            });
+
+            Object.keys(sumConfig).forEach(sumId => {
+                const uniqueInputIds = new Set(sumConfig[sumId]); // Ensure unique IDs
+
+                uniqueInputIds.forEach(inputId => {
+                    const inputElement = document.getElementById(inputId);
+                    if (inputElement) {
+                        inputElement.addEventListener('input', () => updateSum(sumId));
+                    } else {
+                        console.error('Element not found:', inputId);
+                    }
+                });
+            });
+
+            // Initialize other functionalities
+            initializeInputListeners();
+
+            // Logout functionality
+            document.getElementById('logoutBtn').addEventListener('click', function() {
+                localStorage.removeItem('access_token');
+                window.location.href = 'index.htm'; // Update with your login page URL
+            });
+
+            document.getElementById('submitBtn').addEventListener('click', function() {
+                // Placeholder for submit functionality
+            });
+
+            document.getElementById('submitBtn').addEventListener('click', submitFormData);
+        });
+
+        function fetchGamesForTeam() {
+            fetch('http://127.0.0.1:5000/games-for-team', {
+                method: 'GET',
+                headers: {
+                    'Authorization': `Bearer ${localStorage.getItem('access_token')}`
+                }
+            })
+            .then(response => response.json())
+            .then(data => {
+                games = data;
+                if (games.length > 1) {
+                    selectGamePrompt(games);
+                } else if (games.length === 1) {
+                    selectGame(games[0]);
+                } else {
+                    console.log('No games associated with this team.');
+                }
+            })
+            .catch(error => console.error('Error:', error));
+        }
+
+        function selectGamePrompt(games) {
+            var gameSelect = document.getElementById('gameSelect');
+            gameSelect.innerHTML = ''; // Clear existing options
+
+            games.forEach(game => {
+                var option = document.createElement('option');
+                option.value = game.id;
+                option.textContent = game.name;
+                gameSelect.appendChild(option);
+            });
+
+            showModal('gameSelectModal');
+        }
+
+        function showModal(modalId) {
+            var modal = document.getElementById(modalId);
+            if (modal) {
+                modal.style.display = 'block';
+            }
+        }
+
+        function gameSelectionMade() {
+            var selectedGameId = document.getElementById('gameSelect').value;
+            var selectedGame = games.find(game => game.id == selectedGameId);
+
+            hideModal('gameSelectModal');
+            selectGame(selectedGame);
+        }
+
+        function hideModal(modalId) {
+            var modal = document.getElementById(modalId);
+            if (modal) {
+                modal.style.display = 'none';
+            }
+        }
+
+        function selectGame(game) {
+            localStorage.setItem('selectedGame', JSON.stringify(game));
+            document.getElementById('period').textContent = game.current_period;
+        }
+
+        function initializeInputListeners() {
+            // Add event listeners to input fields
+            document.querySelectorAll('input[type="number"]').forEach(input => {
+                input.addEventListener('input', updateSum);
+            });
+        }
+
+        function findSumIdForInput(inputId) {
+            // Search through sumConfig to find if the inputId is part of a sum calculation
+            for (let sumId in sumConfig) {
+                if (sumConfig[sumId].includes(inputId)) {
+                    return sumId; // Return the sumId where the inputId is found
+                }
+            }
+            return null; // Return null if inputId is not part of any sum calculation
+        }
+
+        function updateSum(sumId) {
+            try {
+                const inputIds = sumConfig[sumId];
+                if (!inputIds) {
+                    // If no input IDs are found for this sum, exit the function early
+                    return;
+                }
+
+                const sum = inputIds.reduce((total, currentId) => {
+                    const inputElement = document.getElementById(currentId);
+                    const inputValue = inputElement ? Number(inputElement.value) || 0 : 0;
+                    return total + inputValue;
+                }, 0);
+
+                const sumElement = document.getElementById(sumId);
+                if (sumElement) {
+                    sumElement.textContent = sum.toFixed(2);
+                }
+            } catch (error) {
+                // Error is caught but not processed, effectively ignoring it
+                // Can add console.log here for debugging if needed
+                // console.error('Error in updateSum:', error);
+            }
+        }
+
+        function submitFormData() {
+            const data = {
+                teamname: localStorage.getItem('login_name'),
+                game_id: localStorage.getItem('selectedGameId'),
+                inputSolidVerkaufspreisInland: document.getElementById('inputSolidVerkaufspreisInland').value,
+                inputIdealVerkaufspreisInland: document.getElementById('inputIdealVerkaufspreisInland').value,
+                inputSolidVerkaufspreisAusland: document.getElementById('inputSolidVerkaufspreisAusland').value,
+                inputIdealVerkaufspreisAusland: document.getElementById('inputIdealVerkaufspreisAusland').value,
+                inputSolidFETechnik: document.getElementById('inputSolidFETechnik').value,
+                inputIdealFETechnik: document.getElementById('inputIdealFETechnik').value,
+                inputSolidFEHaptik: document.getElementById('inputSolidFEHaptik').value,
+                inputIdealFEHaptik: document.getElementById('inputIdealFEHaptik').value,
+                inputSolidProduktwerbungInland: document.getElementById('inputSolidProduktwerbungInland').value,
+                inputIdealProduktwerbungInland: document.getElementById('inputIdealProduktwerbungInland').value,
+                inputSolidProduktwerbungAusland: document.getElementById('inputSolidProduktwerbungAusland').value,
+                inputIdealProduktwerbungAusland: document.getElementById('inputIdealProduktwerbungAusland').value,
+                inputSolidPR: document.getElementById('inputSolidPR').value,
+                inputIdealPR: document.getElementById('inputIdealPR').value,
+                inputSolidLiefermengeSondermarkt: document.getElementById('inputSolidLiefermengeSondermarkt').value,
+                inputIdealLiefermengeSondermarkt: document.getElementById('inputIdealLiefermengeSondermarkt').value,
+                inputSolidLiefermengeAusland: document.getElementById('inputSolidLiefermengeAusland').value,
+                inputIdealLiefermengeAusland: document.getElementById('inputIdealLiefermengeAusland').value,
+                inputSolidVertriebspersonalInland: document.getElementById('inputSolidVertriebspersonalInland').value,
+                inputIdealVertriebspersonalInland: document.getElementById('inputIdealVertriebspersonalInland').value,
+                inputSolidVertriebspersonalAusland: document.getElementById('inputSolidVertriebspersonalAusland').value,
+                inputIdealVertriebspersonalAusland: document.getElementById('inputIdealVertriebspersonalAusland').value,
+                inputSolidHilfsstoffe: document.getElementById('inputSolidHilfsstoffe').value,
+                inputIdealHilfsstoffe: document.getElementById('inputIdealHilfsstoffe').value,
+                inputSolidMaterialS: document.getElementById('inputSolidMaterialS').value,
+                inputMaterialI: document.getElementById('inputMaterialI').value,
+                inputFertigungspersonal: document.getElementById('inputFertigungspersonal').value,
+                inputPersonalentwicklung: document.getElementById('inputPersonalentwicklung').value,
+                inputGehaltsaufschlag: document.getElementById('inputGehaltsaufschlag').value,
+                inputInvestitionenBGA: document.getElementById('inputInvestitionenBGA').value,
+                sumVerkaufspreisAusland: document.getElementById('sumVerkaufspreisAusland').value,
+                sumFETechnik: document.getElementById('sumFETechnik').value,
+                sumFEHaptik: document.getElementById('sumFEHaptik').value,
+                sumProduktbewerbungInland: document.getElementById('sumProduktbewerbungInland').value,
+                sumProduktbewerbungAusland: document.getElementById('sumProduktbewerbungAusland').value,
+                sumPR: document.getElementById('sumPR').value,
+                sumLiefermengeSondermarkt: document.getElementById('sumLiefermengeSondermarkt').value,
+                sumLiefermengeAusland: document.getElementById('sumLiefermengeAusland').value,
+                sumVertriebspersonalInland: document.getElementById('sumVertriebspersonalInland').value,
+                sumVertriebspersonalAusland: document.getElementById('sumVertriebspersonalAusland').value,
+                sumBetriebsstoffe: document.getElementById('sumBetriebsstoffe').value,
+                sumMaterialS: document.getElementById('sumMaterialS').value,
+                sumMaterialI: document.getElementById('sumMaterialI').value,
+                gesamtFertigungspersonal: document.getElementById('gesamtFertigungspersonal').value,
+                gesamtPersonalentwicklung: document.getElementById('gesamtPersonalentwicklung').value,
+                gesamtGehaltsaufschlag: document.getElementById('gesamtGehaltsaufschlag').value,
+                gesamtInvestitionenBGA: document.getElementById('gesamtInvestitionenBGA').value,
+            };
+
+            fetch('/submit-turn', {
+                method: 'POST',
+                game_id: localStorage.getItem('selectedGameId'),
+                headers: {
+                    'Authorization': `Bearer ${localStorage.getItem('access_token')}`,
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify(data)
+            })
+            .then(response => response.json())
+            .then(data => {
+                console.log('Success:', data);
+                // Handle successful submission
+            })
+            .catch(error => console.error('Error:', error));
+        }
+    </script>
+</body>
+</html>

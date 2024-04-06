@@ -277,7 +277,7 @@
             .then(data => {
                 data.forEach(team => {
                     let option = document.createElement('option');
-                    option.value = team.id;
+                    option.value = team.name;
                     option.textContent = team.name;
                     teamSelect.appendChild(option);
 
@@ -322,15 +322,22 @@
             let row = teamsTableBody.insertRow();
             let cellName = row.insertCell(0);
             let cellGames = row.insertCell(1);
-            let cellDelete = row.insertCell(2);
+            let cellActions = row.insertCell(2);
 
             cellName.textContent = team.name;
             cellGames.textContent = team.games.map(game => game.name).join(', ');
 
+            // Delete Button
             let deleteBtn = document.createElement('button');
             deleteBtn.textContent = 'Delete';
-            deleteBtn.onclick = function () { deleteTeam(team.id); };
-            cellDelete.appendChild(deleteBtn);
+            deleteBtn.onclick = function () { deleteTeam(team.name); };
+            cellActions.appendChild(deleteBtn); // Using cellActions to append deleteBtn
+
+            // Change Password Button
+            let changePasswordBtn = document.createElement('button');
+            changePasswordBtn.textContent = 'Change Password';
+            changePasswordBtn.onclick = function () { changeTeamPassword(team.name); };
+            cellActions.appendChild(changePasswordBtn); // Using cellActions to append changePasswordBtn
         }
 
 
@@ -360,7 +367,7 @@
 
             const gameData = {
                 name: gameName,
-                team_ids: selectedTeams,
+                team_names: selectedTeams,
                 status: 'active',
                 num_companies: parseInt(selectedTeams.length, 10),
                 num_periods: parseInt(numPeriods, 10),
@@ -466,6 +473,41 @@
             });
         }
 
+        function changeTeamPassword(teamName) {
+            // Prompt the user to enter a new password
+            let newPassword = prompt("Enter new password for " + teamName + ":");
+
+            // Check if a password was entered
+            if (newPassword) {
+                fetch('http://127.0.0.1:5000/teams/' + encodeURIComponent(teamName) + '/change_password', {
+                    method: 'PUT',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': 'Bearer ' + localStorage.getItem('access_token') // Assumes token is stored in local storage
+                    },
+                    body: JSON.stringify({ password: newPassword })
+                })
+                .then(response => {
+                    if (response.ok) {
+                        return response.json();
+                    } else {
+                        throw new Error('Something went wrong');
+                    }
+                })
+                .then(data => {
+                    alert("Password changed successfully");
+                })
+                .catch((error) => {
+                    console.error('Error:', error);
+                    alert("Failed to change password");
+                });
+            } else {
+                // User cancelled the prompt or entered an empty value
+                alert("Password change cancelled");
+            }
+        }
+
+
         // Fetch and display games on page load
         document.addEventListener('DOMContentLoaded', function() {
             fetchTeamsAndGames();
@@ -474,7 +516,7 @@
         // Logout functionality
         document.getElementById('logoutBtn').addEventListener('click', function() {
             localStorage.removeItem('access_token');
-            window.location.href = 'index.html'; // Update with your login page URL
+            window.location.href = 'index.htm'; // Update with your login page URL
         });
 
     </script>

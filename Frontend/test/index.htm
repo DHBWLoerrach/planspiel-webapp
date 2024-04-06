@@ -88,12 +88,13 @@
             .then(data => {
                 console.log('Success:', data);
                 localStorage.setItem('access_token', data.access_token);
+                localStorage.setItem('login_name', name);  // Store the login name
 
                 // Redirect based on the role
                 if (data.is_gamemaster) {
-                    window.location.href = 'gamemaster-test.html';
+                    window.location.href = 'gamemaster-test.htm';
                 } else {
-                    window.location.href = 'player.html';
+                    window.location.href = 'player.htm';
                 }
             })
             .catch((error) => {
