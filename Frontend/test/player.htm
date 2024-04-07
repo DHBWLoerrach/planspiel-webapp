@@ -195,8 +195,8 @@
                                 <td>Verkaufspreis: Inland</td>
                                 <td></td>
                                 <td style="text-align: left;">EUR/Stk.</td>
-                                <td><input type="number" id="inputSolidVerkaufspreisInland"></td>
-                                <td><input type="number" id="inputIdealVerkaufspreisInland"></td>
+                                <td><input type="number" id="inputSolidVerkaufspreisInland" value=none></td>
+                                <td><input type="number" id="inputIdealVerkaufspreisInland" value=none></td>
                                 <td></td>
                             </tr>
                             <tr height="19">
@@ -263,9 +263,9 @@
                                 <td>Öffentlichkeitsarbeit/PR</td>
                                 <td></td>
                                 <td style="text-align: left;">Tsd. EUR</td>
-                                <td><input type="number" id="inputSolidPR"></td>
-                                <td><input type="number" id="inputIdealPR"></td>
-                                <td><span id="sumPR"></span></td>
+                                <td></td>
+                                <td></td>
+                                <td><input type="number" id="sumPR"></td>
                             </tr3>
                             <tr height="30">
                             </tr>
@@ -282,8 +282,8 @@
                                 <td></td>
                                 <td style="text-align: left;">Stk.</td>
                                 <td><input type="number" id="inputSolidLiefermengeSondermarkt"></td>
-                                <td><input type="number" id="inputIdealLiefermengeSondermarkt"></td>
-                                <td><span id="sumLiefermengeSondermarkt"></span></td>
+                                <td></td>
+                                <td></td>
                             </tr>
                             <tr height="19">
                                 <td>Liefermenge: Ausland</td>
@@ -297,17 +297,17 @@
                                 <td>Vertriebspersonal: Inland</td>
                                 <td></td>
                                 <td style="text-align: left;">Anzahl MA</td>
-                                <td><input type="number" id="inputSolidVertriebspersonalInland"></td>
-                                <td><input type="number" id="inputIdealVertriebspersonalInland"></td>
-                                <td><span id="sumVertriebspersonalInland"></span></td>
+                                <td></td>
+                                <td></td>
+                                <td><input type="number" id="sumVertriebspersonalInland"></td>
                             </tr>
                             <tr height="19">
                                 <td>Vertriebspersonal: Ausland</td>
                                 <td></td>
                                 <td style="text-align: left;">Anzahl MA</td>
-                                <td><input type="number" id="inputSolidVertriebspersonalAusland"></td>
-                                <td><input type="number" id="inputIdealVertriebspersonalAusland"></td>
-                                <td><span id="sumVertriebspersonalAusland"></span></td>
+                                <td></td>
+                                <td></td>
+                                <td><input type="number" id="sumVertriebspersonalAusland"></input></td>
                             </tr>
                         </tbody>
                     </table>
@@ -374,8 +374,12 @@
                                 <td>Anlagen (Werkstätte 01)</td>
                                 <td>Anlage</td>
                                 <td>
-                                    <select id="selectSolidAnlagenWerkstaette01">
+                                    <select id="selectNeuAnlagenWerkstaette01">
+                                        <option value="'M'(-8)">'M'(-8)</option>
                                         <option value="--">- - - - -</option>
+                                        <option value="Typ 'S' neu">Typ 'S' neu</option>
+                                        <option value="Typ 'M' neu">Typ 'M' neu</option>
+                                        <option value="Typ 'L' neu">Typ 'L' neu</option>
                                     </select>
                                 </td>
                                 <td><span id="oldWerkstaette01"></span></td>
@@ -385,8 +389,12 @@
                                 <td>Anlagen (Werkstätte 02)</td>
                                 <td>Anlage</td>
                                 <td>
-                                    <select id="selectSolidAnlagenWerkstaette02">
+                                    <select id="selectNeuAnlagenWerkstaette02">
+                                        <option value="'M'(-7)">'M'(-7)</option>
                                         <option value="--">- - - - -</option>
+                                        <option value="Typ 'S' neu">Typ 'S' neu</option>
+                                        <option value="Typ 'M' neu">Typ 'M' neu</option>
+                                        <option value="Typ 'L' neu">Typ 'L' neu</option>
                                     </select>
                                 </td>
                                 <td><span id="oldWerkstaette02"></span></td>
@@ -396,8 +404,12 @@
                                 <td>Anlagen (Werkstätte 03)</td>
                                 <td>Anlage</td>
                                 <td>
-                                    <select id="selectSolidAnlagenWerkstaette03">
+                                    <select id="selectNeuAnlagenWerkstaette03">
+                                        <option value="'M'(-4)">'M'(-4)</option>
                                         <option value="--">- - - - -</option>
+                                        <option value="Typ 'S' neu">Typ 'S' neu</option>
+                                        <option value="Typ 'M' neu">Typ 'M' neu</option>
+                                        <option value="Typ 'L' neu">Typ 'L' neu</option>
                                     </select>
                                 </td>
                                 <td><span id="oldWerkstaette03"></span></td>
@@ -407,8 +419,12 @@
                                 <td>Anlagen (Werkstätte 04)</td>
                                 <td>Anlage</td>
                                 <td>
-                                    <select id="selectSolidAnlagenWerkstaette04">
+                                    <select id="selectNeuAnlagenWerkstaette04">
+                                        <option value="'M'(-3)">'M'(-3)</option>
                                         <option value="--">- - - - -</option>
+                                        <option value="Typ 'S' neu">Typ 'S' neu</option>
+                                        <option value="Typ 'M' neu">Typ 'M' neu</option>
+                                        <option value="Typ 'L' neu">Typ 'L' neu</option>
                                     </select>
                                 </td>
                                 <td><span id="oldWerkstaette04"></span></td>
@@ -418,8 +434,12 @@
                                 <td>Anlagen (Werkstätte 05)</td>
                                 <td>Anlage</td>
                                 <td>
-                                    <select id="selectSolidAnlagenWerkstaette05">
+                                    <select id="selectNeuAnlagenWerkstaette05">
+                                        <option value=""></option>
                                         <option value="--">- - - - -</option>
+                                        <option value="Typ 'S' neu">Typ 'S' neu</option>
+                                        <option value="Typ 'M' neu">Typ 'M' neu</option>
+                                        <option value="Typ 'L' neu">Typ 'L' neu</option>
                                     </select>
                                 </td>
                                 <td><span id="oldWerkstaette05"></span></td>
@@ -429,8 +449,12 @@
                                 <td>Anlagen (Werkstätte 06)</td>
                                 <td>Anlage</td>
                                 <td>
-                                    <select id="selectSolidAnlagenWerkstaette06">
+                                    <select id="selectNeuAnlagenWerkstaette06">
+                                        <option value=""></option>
                                         <option value="--">- - - - -</option>
+                                        <option value="Typ 'S' neu">Typ 'S' neu</option>
+                                        <option value="Typ 'M' neu">Typ 'M' neu</option>
+                                        <option value="Typ 'L' neu">Typ 'L' neu</option>
                                     </select>
                                 </td>
                                 <td><span id="oldWerkstaette06"></span></td>
@@ -440,8 +464,12 @@
                                 <td>Anlagen (Werkstätte 07)</td>
                                 <td>Anlage</td>
                                 <td>
-                                    <select id="selectSolidAnlagenWerkstaette07">
+                                    <select id="selectNeuAnlagenWerkstaette07">
+                                        <option value=""></option>
                                         <option value="--">- - - - -</option>
+                                        <option value="Typ 'S' neu">Typ 'S' neu</option>
+                                        <option value="Typ 'M' neu">Typ 'M' neu</option>
+                                        <option value="Typ 'L' neu">Typ 'L' neu</option>
                                     </select>
                                 </td>
                                 <td><span id="oldWerkstaette07"></span></td>
@@ -451,8 +479,12 @@
                                 <td>Anlagen (Werkstätte 08)</td>
                                 <td>Anlage</td>
                                 <td>
-                                    <select id="selectSolidAnlagenWerkstaette08">
+                                    <select id="selectNeuAnlagenWerkstaette08">
+                                        <option value=""></option>
                                         <option value="--">- - - - -</option>
+                                        <option value="Typ 'S' neu">Typ 'S' neu</option>
+                                        <option value="Typ 'M' neu">Typ 'M' neu</option>
+                                        <option value="Typ 'L' neu">Typ 'L' neu</option>
                                     </select>
                                 </td>
                                 <td><span id="oldWerkstaette08"></span></td>
@@ -569,7 +601,6 @@
                                 <td></td>
                                 <td></td>
                                 <td></td>
-                                <td></td>
                                 <td>Gesamt</td>
                             </tr>
                             <tr height="19">
@@ -577,32 +608,28 @@
                                 <td>Anzahl MA</td>
                                 <td></td>
                                 <td></td>
-                                <td><input type="number" id="inputFertigungspersonal"></td>
-                                <td><span id="gesamtFertigungspersonal"></span></td>
+                                <td><input type="number" id="gesamtFertigungspersonal"></td>
                             </tr>
                             <tr height="19">
                                 <td>Personalentwicklung</td>
                                 <td>Tsd. EUR</td>
                                 <td></td>
                                 <td></td>
-                                <td><input type="number" id="inputPersonalentwicklung"></td>
-                                <td><span id="gesamtPersonalentwicklung"></span></td>
+                                <td><input type="number" id="gesamtPersonalentwicklung"></td>
                             </tr>
                             <tr height="19">
                                 <td>Gehaltsaufschlag (freiwillig)</td>
                                 <td>%</td>
                                 <td></td>
                                 <td></td>
-                                <td><input type="number" id="inputGehaltsaufschlag"></td>
-                                <td><span id="gesamtGehaltsaufschlag"></span></td>
+                                <td><input type="number" id="gesamtGehaltsaufschlag"></td>
                             </tr>
                             <tr height="19">
                                 <td>Investitionen in die BGA (freiwillig)</td>
                                 <td>Tsd. EUR</td>
                                 <td></td>
                                 <td></td>
-                                <td><input type="number" id="inputInvestitionenBGA"></td>
-                                <td><span id="gesamtInvestitionenBGA"></span></td>
+                                <td><input type="number" id="gesamtInvestitionenBGA"></td>
                             </tr>
                         </tbody>
                     </table>
@@ -612,6 +639,10 @@
             </tr>
         </tbody>
     </table>
+
+    <!-- else div would overshadow last rows! -->
+    <br>
+    <br>
 
     <div class="button-container">
         <button id="submitBtn">Submit</button>
@@ -626,18 +657,10 @@
             "sumFEHaptik": ["inputSolidFEHaptik", "inputIdealFEHaptik"],
             "sumProduktbewerbungInland": ["inputSolidProduktwerbungInland", "inputIdealProduktwerbungInland"],
             "sumProduktbewerbungAusland": ["inputSolidProduktwerbungAusland", "inputIdealProduktwerbungAusland"],
-            "sumPR": ["inputSolidPR", "inputIdealPR"],
-            "sumLiefermengeSondermarkt": ["inputSolidLiefermengeSondermarkt", "inputIdealLiefermengeSondermarkt"],
             "sumLiefermengeAusland": ["inputSolidLiefermengeAusland", "inputIdealLiefermengeAusland"],
-            "sumVertriebspersonalInland": ["inputSolidVertriebspersonalInland", "inputIdealVertriebspersonalInland"],
-            "sumVertriebspersonalAusland": ["inputSolidVertriebspersonalAusland", "inputIdealVertriebspersonalAusland"],
             "sumBetriebsstoffe": ["inputSolidHilfsstoffe", "inputIdealHilfsstoffe"],
             "sumMaterialS": ["inputSolidMaterialS"],
             "sumMaterialI": ["inputMaterialI"],
-            "gesamtFertigungspersonal": ["inputFertigungspersonal"],
-            "gesamtPersonalentwicklung": ["inputPersonalentwicklung"],
-            "gesamtGehaltsaufschlag": ["inputGehaltsaufschlag"],
-            "gesamtInvestitionenBGA": ["inputInvestitionenBGA"]
         };
 
 
@@ -810,56 +833,71 @@
 
         function submitFormData() {
             const currentGameObject = JSON.parse(localStorage.getItem('currentGame'))
+            console.log(document.getElementById('inputSolidVerkaufspreisInland').value)
             const data = {
                 teamname: localStorage.getItem('login_name'),
                 game_id: currentGameObject.id,
                 turn_number: currentGameObject.current_period,
+                //Preispolitik
                 inputSolidVerkaufspreisInland: document.getElementById('inputSolidVerkaufspreisInland').value,
                 inputIdealVerkaufspreisInland: document.getElementById('inputIdealVerkaufspreisInland').value,
                 inputSolidVerkaufspreisAusland: document.getElementById('inputSolidVerkaufspreisAusland').value,
                 inputIdealVerkaufspreisAusland: document.getElementById('inputIdealVerkaufspreisAusland').value,
+
+                //Produktpolitik/Produktentwicklung
                 inputSolidFETechnik: document.getElementById('inputSolidFETechnik').value,
                 inputIdealFETechnik: document.getElementById('inputIdealFETechnik').value,
                 inputSolidFEHaptik: document.getElementById('inputSolidFEHaptik').value,
                 inputIdealFEHaptik: document.getElementById('inputIdealFEHaptik').value,
+
+                //Kommunikationspolitik
                 inputSolidProduktwerbungInland: document.getElementById('inputSolidProduktwerbungInland').value,
                 inputIdealProduktwerbungInland: document.getElementById('inputIdealProduktwerbungInland').value,
                 inputSolidProduktwerbungAusland: document.getElementById('inputSolidProduktwerbungAusland').value,
                 inputIdealProduktwerbungAusland: document.getElementById('inputIdealProduktwerbungAusland').value,
-                inputSolidPR: document.getElementById('inputSolidPR').value,
-                inputIdealPR: document.getElementById('inputIdealPR').value,
+                sumPR: document.getElementById('sumPR').value,
+
+                //Distiributionspolitik
                 inputSolidLiefermengeSondermarkt: document.getElementById('inputSolidLiefermengeSondermarkt').value,
-                inputIdealLiefermengeSondermarkt: document.getElementById('inputIdealLiefermengeSondermarkt').value,
                 inputSolidLiefermengeAusland: document.getElementById('inputSolidLiefermengeAusland').value,
                 inputIdealLiefermengeAusland: document.getElementById('inputIdealLiefermengeAusland').value,
-                inputSolidVertriebspersonalInland: document.getElementById('inputSolidVertriebspersonalInland').value,
-                inputIdealVertriebspersonalInland: document.getElementById('inputIdealVertriebspersonalInland').value,
-                inputSolidVertriebspersonalAusland: document.getElementById('inputSolidVertriebspersonalAusland').value,
-                inputIdealVertriebspersonalAusland: document.getElementById('inputIdealVertriebspersonalAusland').value,
+                sumVertriebspersonalInland: document.getElementById('sumVertriebspersonalInland').value,
+                sumVertriebspersonalAusland: document.getElementById('sumVertriebspersonalAusland').value,
+
+                //Marktforschung
+                selectBranchenbericht: document.getElementById('selectBranchenbericht').value,
+                selectIdealMarktbericht: document.getElementById('selectIdealMarktbericht').value,
+                selectSolidMarktbericht: document.getElementById('selectSolidMarktbericht').value,
+
+                //Produktionsplan
+                inputSolidFertigungsmengen: document.getElementById('inputSolidFertigungsmengen').value,
+                inputIdealFertigungsmengen: document.getElementById('inputIdealFertigungsmengen').value,
+
+                //Materialeinkauf
                 inputSolidHilfsstoffe: document.getElementById('inputSolidHilfsstoffe').value,
                 inputIdealHilfsstoffe: document.getElementById('inputIdealHilfsstoffe').value,
                 inputSolidMaterialS: document.getElementById('inputSolidMaterialS').value,
                 inputMaterialI: document.getElementById('inputMaterialI').value,
-                inputFertigungspersonal: document.getElementById('inputFertigungspersonal').value,
-                inputPersonalentwicklung: document.getElementById('inputPersonalentwicklung').value,
-                inputGehaltsaufschlag: document.getElementById('inputGehaltsaufschlag').value,
-                inputInvestitionenBGA: document.getElementById('inputInvestitionenBGA').value,
-                sumFETechnik: document.getElementById('sumFETechnik').value,
-                sumFEHaptik: document.getElementById('sumFEHaptik').value,
-                sumProduktbewerbungInland: document.getElementById('sumProduktbewerbungInland').value,
-                sumProduktbewerbungAusland: document.getElementById('sumProduktbewerbungAusland').value,
-                sumPR: document.getElementById('sumPR').value,
-                sumLiefermengeSondermarkt: document.getElementById('sumLiefermengeSondermarkt').value,
-                sumLiefermengeAusland: document.getElementById('sumLiefermengeAusland').value,
-                sumVertriebspersonalInland: document.getElementById('sumVertriebspersonalInland').value,
-                sumVertriebspersonalAusland: document.getElementById('sumVertriebspersonalAusland').value,
-                sumBetriebsstoffe: document.getElementById('sumBetriebsstoffe').value,
-                sumMaterialS: document.getElementById('sumMaterialS').value,
-                sumMaterialI: document.getElementById('sumMaterialI').value,
-                gesamtFertigungspersonal: document.getElementById('gesamtFertigungspersonal').value,
-                gesamtPersonalentwicklung: document.getElementById('gesamtPersonalentwicklung').value,
-                gesamtGehaltsaufschlag: document.getElementById('gesamtGehaltsaufschlag').value,
-                gesamtInvestitionenBGA: document.getElementById('gesamtInvestitionenBGA').value,
+
+                //Technische Anlagen
+                //TODO: was ist mit den anderen?
+                selectAltAnlageWerkstaette01: 0, //TODO: do what ever to do with old value
+                selectAltAnlageWerkstaette08: 0, //TODO: do what ever to do with old value
+                selectNeuAnlagenWerkstaette01: document.getElementById('selectNeuAnlagenWerkstaette01').value,
+                selectNeuAnlagenWerkstaette08: document.getElementById('selectNeuAnlagenWerkstaette08').value,
+
+                //Human Resources
+                gesamtFertigungspersonal: document.getElementById('gesamtFertigungspersonal'),
+                gesamtPersonalentwicklung: document.getElementById('gesamtPersonalentwicklung'),
+                gesamtGehaltsaufschlag: document.getElementById('gesamtGehaltsaufschlag'),
+                gesamtInvestitionenBGA: document.getElementById('gesamtInvestitionenBGA'),
+
+                //Finanzwirtschaft
+                inputDarlehenS : document.getElementById('inputDarlehenS').value,
+                inputDarlehenM: document.getElementById('inputDarlehenM').value,
+                inputDarlehenL: document.getElementById('inputDarlehenL').value,
+                inputFestgeldDarlehen: document.getElementById('inputFestgeldDarlehen').value,
+                inputDividenden: document.getElementById('inputDividenden').value,
             };
 
             fetch('http://127.0.0.1:5000/submit-turn', {
@@ -893,6 +931,7 @@
             })
             .then(response => response.json())
             .then(data => {
+                location.reload();
             })
             .catch(error => {
                 console.error('Error in locking team:', error);

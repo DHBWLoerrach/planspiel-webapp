@@ -95,53 +95,66 @@ class Turn(db.Model):
     turn_number = db.Column(db.Integer, nullable=False)
     submission_time = db.Column(db.DateTime, default=func.current_timestamp())
     team_name = db.Column(db.String(100), db.ForeignKey('teams.name'))
+
+    # Preispolitik
     inputSolidVerkaufspreisInland = db.Column(db.Float)
     inputIdealVerkaufspreisInland = db.Column(db.Float)
     inputSolidVerkaufspreisAusland = db.Column(db.Float)
     inputIdealVerkaufspreisAusland = db.Column(db.Float)
+
+    # Produktpolitik/Produktentwicklung
     inputSolidFETechnik = db.Column(db.Float)
     inputIdealFETechnik = db.Column(db.Float)
     inputSolidFEHaptik = db.Column(db.Float)
     inputIdealFEHaptik = db.Column(db.Float)
+
+    # Kommunikationspolitik
     inputSolidProduktwerbungInland = db.Column(db.Float)
     inputIdealProduktwerbungInland = db.Column(db.Float)
     inputSolidProduktwerbungAusland = db.Column(db.Float)
     inputIdealProduktwerbungAusland = db.Column(db.Float)
-    inputSolidPR = db.Column(db.Float)
-    inputIdealPR = db.Column(db.Float)
-    inputSolidLiefermengeSondermarkt = db.Column(db.Float)
-    inputIdealLiefermengeSondermarkt = db.Column(db.Float)
-    inputSolidLiefermengeAusland = db.Column(db.Float)
-    inputIdealLiefermengeAusland = db.Column(db.Float)
-    inputSolidVertriebspersonalInland = db.Column(db.Float)
-    inputIdealVertriebspersonalInland = db.Column(db.Float)
-    inputSolidVertriebspersonalAusland = db.Column(db.Float)
-    inputIdealVertriebspersonalAusland = db.Column(db.Float)
+    sumPR = db.Column(db.Float)
+
+    # Distributionspolitik
+    inputSolidLiefermengeSondermarkt = db.column(db.Float)
+    inputSolidLiefermengeAusland = db.column(db.Float)
+    inputIdealLiefermengeAusland = db.column(db.Float)
+    sumVertriebspersonalInland = db.Column(db.Float)
+    sumVertriebspersonalAusland = db.Column(db.Float)
+
+    # Marktforschung
+    selectBranchenbericht = db.Column(db.String(100))
+    selectIdealMarktbericht = db.Column(db.String(100))
+    selectSolidMarktbericht = db.Column(db.String(100))
+
+    # Produktionsplan
+    inputSolidFertigungsmengen = db.Column(db.Float)
+    inputIdealFertigungsmengen = db.Column(db.Float)
+
+    # Materialeinkauf
     inputSolidHilfsstoffe = db.Column(db.Float)
     inputIdealHilfsstoffe = db.Column(db.Float)
     inputSolidMaterialS = db.Column(db.Float)
     inputMaterialI = db.Column(db.Float)
-    inputFertigungspersonal = db.Column(db.Float)
-    inputPersonalentwicklung = db.Column(db.Float)
-    inputGehaltsaufschlag = db.Column(db.Float)
-    inputInvestitionenBGA = db.Column(db.Float)
-    sumFETechnik = db.Column(db.Float)
-    sumFEHaptik = db.Column(db.Float)
-    sumProduktbewerbungInland = db.Column(db.Float)
-    sumProduktbewerbungAusland = db.Column(db.Float)
-    sumPR = db.Column(db.Float)
-    sumLiefermengeSondermarkt = db.Column(db.Float)
-    sumLiefermengeAusland = db.Column(db.Float)
-    sumVertriebspersonalInland = db.Column(db.Float)
-    sumVertriebspersonalAusland = db.Column(db.Float)
-    sumBetriebsstoffe = db.Column(db.Float)
-    sumMaterialS = db.Column(db.Float)
-    sumMaterialI = db.Column(db.Float)
-    gesamtFertigungspersonal = db.Column(db.Float)
-    gesamtPersonalentwicklung = db.Column(db.Float)
-    gesamtGehaltsaufschlag = db.Column(db.Float)
-    gesamtInvestitionenBGA = db.Column(db.Float)
-    is_template = db.Column(db.Boolean, default=False, nullable=False)
+
+    # Technische Anlagen
+    selectNeuAnlagenWerkstaette01 = db.Column(db.String(100))
+    selectNeuAnlagenWerkstaette08 = db.Column(db.String(100))
+    selectAltAnlagenWerkstaette01 = db.Column(db.String(100))
+    selectAltAnlagenWerkstaette08 = db.Column(db.String(100))
+
+    # Human Resources
+    gesamtFertigungspersonal = db.column(db.Float)
+    gesamtPersonalentwicklung = db.column(db.Float)
+    gesamtGehaltsaufschlag = db.column(db.Float)
+    gesamtInvestitionenBGA = db.column(db.Float)
+
+    # Finanzwesen
+    inputDarlehenS = db.Column(db.Float)
+    inputDarlehenM = db.Column(db.Float)
+    inputDarlehenL = db.Column(db.Float)
+    inputFestgeldDarlehen = db.Column(db.Float)
+    inputDividenden = db.Column(db.Float)
 
     # Define the relationship with the Game model
     game = db.relationship('Game', back_populates='turns')
@@ -463,53 +476,67 @@ def submit_turn():
         game_id=game_id,
         turn_number=request.json.get('turn_number'),
         team_name=current_team,
-        inputSolidVerkaufspreisAusland=request.json.get('inputSolidVerkaufspreisAusland'),
-        inputIdealVerkaufspreisAusland=request.json.get('inputIdealVerkaufspreisAusland'),
-        inputSolidVerkaufspreisInland=request.json.get('inputSolidVerkaufspreisInland'),
-        inputIdealVerkaufspreisInland=request.json.get('inputIdealVerkaufspreisInland'),
-        inputSolidFETechnik=request.json.get('inputSolidFETechnik'),
-        inputIdealFETechnik=request.json.get('inputIdealFETechnik'),
-        inputSolidFEHaptik=request.json.get('inputSolidFEHaptik'),
-        inputIdealFEHaptik=request.json.get('inputIdealFEHaptik'),
-        inputSolidProduktwerbungInland=request.json.get('inputSolidProduktwerbungInland'),
-        inputIdealProduktwerbungInland=request.json.get('inputIdealProduktwerbungInland'),
-        inputSolidProduktwerbungAusland=request.json.get('inputSolidProduktwerbungAusland'),
-        inputIdealProduktwerbungAusland=request.json.get('inputIdealProduktwerbungAusland'),
-        inputSolidPR=request.json.get('inputSolidPR'),
-        inputIdealPR=request.json.get('inputIdealPR'),
-        inputSolidLiefermengeSondermarkt=request.json.get('inputSolidLiefermengeSondermarkt'),
-        inputIdealLiefermengeSondermarkt=request.json.get('inputIdealLiefermengeSondermarkt'),
-        inputSolidLiefermengeAusland=request.json.get('inputSolidLiefermengeAusland'),
-        inputIdealLiefermengeAusland=request.json.get('inputIdealLiefermengeAusland'),
-        inputSolidVertriebspersonalInland=request.json.get('inputSolidVertriebspersonalInland'),
-        inputIdealVertriebspersonalInland=request.json.get('inputIdealVertriebspersonalInland'),
-        inputSolidVertriebspersonalAusland=request.json.get('inputSolidVertriebspersonalAusland'),
-        inputIdealVertriebspersonalAusland=request.json.get('inputIdealVertriebspersonalAusland'),
-        inputSolidHilfsstoffe=request.json.get('inputSolidHilfsstoffe'),
-        inputIdealHilfsstoffe=request.json.get('inputIdealHilfsstoffe'),
-        inputSolidMaterialS=request.json.get('inputSolidMaterialS'),
-        inputMaterialI=request.json.get('inputMaterialI'),
-        inputFertigungspersonal=request.json.get('inputFertigungspersonal'),
-        inputPersonalentwicklung=request.json.get('inputPersonalentwicklung'),
-        inputGehaltsaufschlag=request.json.get('inputGehaltsaufschlag'),
-        inputInvestitionenBGA=request.json.get('inputInvestitionenBGA'),
-        sumFETechnik=request.json.get('sumFETechnik'),
-        sumFEHaptik=request.json.get('sumFEHaptik'),
-        sumProduktbewerbungInland=request.json.get('sumProduktbewerbungInland'),
-        sumProduktbewerbungAusland=request.json.get('sumProduktbewerbungAusland'),
-        sumPR=request.json.get('sumPR'),
-        sumLiefermengeSondermarkt=request.json.get('sumLiefermengeSondermarkt'),
-        sumLiefermengeAusland=request.json.get('sumLiefermengeAusland'),
-        sumVertriebspersonalInland=request.json.get('sumVertriebspersonalInland'),
-        sumVertriebspersonalAusland=request.json.get('sumVertriebspersonalAusland'),
-        sumBetriebsstoffe=request.json.get('sumBetriebsstoffe'),
-        sumMaterialS=request.json.get('sumMaterialS'),
-        sumMaterialI=request.json.get('sumMaterialI'),
-        gesamtFertigungspersonal=request.json.get('gesamtFertigungspersonal'),
-        gesamtPersonalentwicklung=request.json.get('gesamtPersonalentwicklung'),
-        gesamtGehaltsaufschlag=request.json.get('gesamtGehaltsaufschlag'),
-        gesamtInvestitionenBGA=request.json.get('gesamtInvestitionenBGA'),
+        # Preispolitik
+        inputSolidVerkaufspreisInland = request.json.get('inputSolidVerkaufspreisInland'),
+        inputIdealVerkaufspreisInland = request.json.get('inputIdealVerkaufspreisInland'),
+        inputSolidVerkaufspreisAusland = request.json.get('inputSolidVerkaufspreisAusland'),
+        inputIdealVerkaufspreisAusland = request.json.get('inputIdealVerkaufspreisAusland'),
+
+        # Produktpolitik
+        inputSolidFETechnik = request.json.get('inputSolidFETechnik'),
+        inputIdealFETechnik = request.json.get('inputIdealFETechnik'),
+        inputSolidFEHaptik = request.json.get('inputSolidFEHaptik'),
+        inputIdealFEHaptik = request.json.get('inputIdealFEHaptik'),
+
+        # Kommunikationspolitik
+        inputSolidProduktwerbungInland = request.json.get('inputSolidProduktwerbungInland'),
+        inputIdealProduktwerbungInland = request.json.get('inputIdealProduktwerbungInland'),
+        inputSolidProduktwerbungAusland = request.json.get('inputSolidProduktwerbungAusland'),
+        inputIdealProduktwerbungAusland = request.json.get('inputIdealProduktwerbungAusland'),
+        sumPR = request.json.get('sumPR'),
+
+        # Distributionspolitik
+        inputSolidLiefermengeSondermarkt = request.json.get('inputSolidLiefermengeSondermarkt'),
+        inputSolidLiefermengeAusland = request.json.get('inputSolidLiefermengeAusland'),
+        inputIdealLiefermengeAusland = request.json.get('inputIdealLiefermengeAusland'),
+        sumVertriebspersonalInland = request.json.get('sumVertriebspersonalInland'),
+        sumVertriebspersonalAusland = request.json.get('sumVertriebspersonalAusland'),
+
+        # Marktforschung
+        selectBranchenbericht = request.json.get('selectBranchenbericht'),
+        selectIdealMarktbericht = request.json.get('selectIdealMarktbericht'),
+        selectSolidMarktbericht = request.json.get('selectSolidMarktbericht'),
+
+        # Produktionsplan
+        inputSolidFertigungsmengen = request.json.get('inputSolidFertigungsmengen'),
+        inputIdealFertigungsmengen = request.json.get('inputIdealFertigungsmengen'),
+
+        # Materialeinkauf
+        inputSolidHilfsstoffe = request.json.get('inputSolidHilfsstoffe'),
+        inputIdealHilfsstoffe = request.json.get('inputIdealHilfsstoffe'),
+        inputSolidMaterialS = request.json.get('inputSolidMaterialS'),
+        inputMaterialI = request.json.get('inputMaterialI'),
+
+        # Technische Anlagen
+        selectNeuAnlagenWerkstaette01 = request.json.get('selectNeuAnlagenWerkstaette01'),
+        selectNeuAnlagenWerkstaette08 = request.json.get('selectNeuAnlagenWerkstaette08'),
+        selectAltAnlagenWerkstaette01 = request.json.get('selectAltAnlagenWerkstaette01'),
+        selectAltAnlagenWerkstaette08 = request.json.get('selectAltAnlagenWerkstaette08'),
+
+        # Human Resources
+        gesamtFertigungspersonal = request.json.get('gesamtFertigungspersonal'),
+        gesamtPersonalentwicklung = request.json.get('gesamtPersonalentwicklung'),
+        gesamtGehaltsaufschlag = request.json.get('gesamtGehaltsaufschlag'),
+        gesamtInvestitionenBGA = request.json.get('gesamtInvestitionenBGA'),
+
+        # Finanzwesen
+        inputDarlehenS = request.json.get('inputDarlehenS'),
+        inputDarlehenM = request.json.get('inputDarlehenM'),
+        inputDarlehenL = request.json.get('inputDarlehenL'),
+        inputFestgeldDarlehen = request.json.get('inputFestgeldDarlehen'),
+        inputDividenden = request.json.get('inputDividenden'),
     )
+
 
     db.session.add(new_turn)
     db.session.commit()
