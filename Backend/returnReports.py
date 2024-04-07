@@ -50,9 +50,21 @@ class InputHandler:
             inputMaterialI,
 
             selectNeuAnlagenWerkstaette01,
+            selectNeuAnlagenWerkstaette02,
+            selectNeuAnlagenWerkstaette03,
+            selectNeuAnlagenWerkstaette04,
+            selectNeuAnlagenWerkstaette05,
+            selectNeuAnlagenWerkstaette06,
+            selectNeuAnlagenWerkstaette07,
             selectNeuAnlagenWerkstaette08,
 
             selectAltAnlagenWerkstaette01,
+            selectAltAnlagenWerkstaette02,
+            selectAltAnlagenWerkstaette03,
+            selectAltAnlagenWerkstaette04,
+            selectAltAnlagenWerkstaette05,
+            selectAltAnlagenWerkstaette06,
+            selectAltAnlagenWerkstaette07,
             selectAltAnlagenWerkstaette08,
 
             gesamtFertigungspersonal,
@@ -79,10 +91,10 @@ class InputHandler:
             mDec_GESAMT = result[17:21]
             pDec_SOLID = result[21:24]
             pDec_IDEAL = result[24:27]
-            pAll_TA_neu = result[27:29]
-            pAll_TA_alt = result[29:31]
-            pDec_HR = result[31:35]
-            fDec_FIN = result[35:40]
+            pAll_TA_neu = result[27:34]
+            pAll_TA_alt = result[35:42]
+            pDec_HR = result[43:46]
+            fDec_FIN = result[47:52]
 
             return mDec_SOLID, mDec_IDEAL, mDec_GESAMT, pDec_SOLID, pDec_IDEAL, pAll_TA_neu, pAll_TA_alt, pDec_HR, fDec_FIN
         else:
