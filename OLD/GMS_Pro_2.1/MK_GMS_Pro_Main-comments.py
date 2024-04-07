@@ -567,6 +567,15 @@ for co in range(NUM_COMPANIES):
     decisionWB_read.close()
     decisionWB_write.close()
 
+
+
+
+
+
+
+
+
+                                                                                                                                                        
     # Speichere Marketing-Entscheidungen in Unternehmens-Daten
     mDec_SOLID_h[:, co, PERIOD+OFFSET] = mDec_SOLID[:, co]
     mDec_IDEAL_h[:, co, PERIOD+OFFSET] = mDec_IDEAL[:, co]
