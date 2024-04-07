@@ -1,13 +1,13 @@
-index.htm:
+# index.htm:
 
 ### `Event Listener für das Login-Formular`
 - **Funktion:** Verarbeitet die Einreichung des Login-Formulars.
 - **Aktion:** Verhindert die Standardaktion des Formulars, liest Benutzername und Passwort aus den Eingabefeldern aus und sendet diese in einem POST-Request an den Server.
 - **Zweck:** Authentifiziert den Benutzer gegenüber dem Server und leitet ihn basierend auf seiner Rolle (Game Master oder Spieler) auf die entsprechende Seite weiter.
 
+</br></br></br></br></br></br></br></br>
 
-
-player.htm:
+# player.htm:
 
 ### `fetchGamesForTeam`
 - **Funktion:** Lädt verfügbare Spiele für das Team vom Server.
@@ -64,9 +64,9 @@ player.htm:
 - **Aktion:** Sendet eine GET-Anfrage, um den Sperrstatus des Teams zu überprüfen.
 - **Zweck:** Verhindert, dass der Benutzer Änderungen vornimmt, wenn das Team für das aktuelle Spiel gesperrt ist.
 
+</br></br></br></br></br></br></br></br>
 
-
-gamemaster.htm:
+# gamemaster.htm:
 
 ### `deleteGame`
 - **Funktion:** Löscht ein Spiel basierend auf seiner ID.
