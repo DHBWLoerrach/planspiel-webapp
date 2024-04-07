@@ -100,24 +100,24 @@ class InputHandler:
         else:
             return None, None, None, None, None, None, None, None, None
 
-# Example usage
-db_url = 'mysql+pymysql://root@localhost/gamesimulationdb'
-input_handler = InputHandler(db_url)
-game_id = 13
-team = 'testTeam'
-period = 0
-mDec_SOLID, mDec_IDEAL, mDec_GESAMT, pDec_SOLID, pDec_IDEAL, pAll_TA_neu, pAll_TA_alt, pDec_HR, fDec_FIN = input_handler.load_decision_data(game_id, team, period)
+# # Example usage
+# db_url = 'mysql+pymysql://root@localhost/gamesimulationdb'
+# input_handler = InputHandler(db_url)
+# game_id = 13
+# team = 'testTeam'
+# period = 0
+# mDec_SOLID, mDec_IDEAL, mDec_GESAMT, pDec_SOLID, pDec_IDEAL, pAll_TA_neu, pAll_TA_alt, pDec_HR, fDec_FIN = input_handler.load_decision_data(game_id, team, period)
 
 # Print the returned data
-print("mDec_SOLID:", mDec_SOLID)
-print("mDec_IDEAL:", mDec_IDEAL)
-print("mDec_GESAMT:", mDec_GESAMT)
-print("pDec_SOLID:", pDec_SOLID)
-print("pDec_IDEAL:", pDec_IDEAL)
-print("pAll_TA_neu:", pAll_TA_neu)
-print("pAll_TA_alt:", pAll_TA_alt)
-print("pDec_HR:", pDec_HR)
-print("fDec_FIN:", fDec_FIN)
+# print("mDec_SOLID:", mDec_SOLID)
+# print("mDec_IDEAL:", mDec_IDEAL)
+# print("mDec_GESAMT:", mDec_GESAMT)
+# print("pDec_SOLID:", pDec_SOLID)
+# print("pDec_IDEAL:", pDec_IDEAL)
+# print("pAll_TA_neu:", pAll_TA_neu)
+# print("pAll_TA_alt:", pAll_TA_alt)
+# print("pDec_HR:", pDec_HR)
+# print("fDec_FIN:", fDec_FIN)
 
 
 class DataProcessor:
@@ -125,7 +125,7 @@ class DataProcessor:
         # Initialization code here
         pass
 
-    def process_decisions(self, decisions):
+    def process_decisions(self, PERIOD, GMS_NAME = 'Pro021', GMS_VERSION = 'GMS_Pro_2.1', SETUP_FILE = 'MK_GMS_Pro-Setup.npz'):
         # Code to process the decisions
         pass
 

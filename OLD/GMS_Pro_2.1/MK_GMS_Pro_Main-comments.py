@@ -389,13 +389,25 @@ for co in range(NUM_COMPANIES):
     else:
         cell_values[7] = 0
     mDec_SOLID[:, co] = np.array(cell_values)
+    
+    
+    
+    
     # Sondermarkt-Entscheidungen (sicherheitshalber) eingrenzen
     mDec_SOLID[8, co] = min(mDec_SOLID[8, co],
                             szenario['Sondermarkt'][1, PERIOD+OFFSET])
+    
+    
+    
+    
     # Auslandsentscheidungen (sicherheitshalber) auf Null setzen
     if PERIOD<MARKET_1:
         mDec_SOLID[[1, 5, 6]] = 0
 
+    
+    
+    
+    
     #-- Marketing-Entscheidungen IDEAL
     cell_values = mod.read_XLS_cells(mDec_IDEAL_cell, decisionWS_read)
     cell_values = [x if x is not None else 0 for x in cell_values]
@@ -407,19 +419,39 @@ for co in range(NUM_COMPANIES):
     else:
         cell_values[7] = 0
     mDec_IDEAL[:, co] = np.array(cell_values)
+    
+    
+    
+    
     # F&E-Entscheidungen (sicherheitshalber) auf Null setzen
     if PERIOD<IDEAL_RD:
         mDec_IDEAL[[2, 3]] = 0
+    
+    
+    
+    
     # Inlandsentscheidungen (sicherheitshalber) auf Null setzen
     if PERIOD<MARKET_2:
         mDec_IDEAL[[0, 4, 7]] = 0
+    
+    
+    
+    
     # Auslandsentscheidungen (sicherheitshalber) auf Null setzen
     if PERIOD<MARKET_3:
         mDec_IDEAL[[1, 5, 6]] = 0
 
+    
+    
+    
+    
     #-- Marketing-Entscheidungen GESAMT
     cell_values = mod.read_XLS_cells(mDec_GESAMT_cell, decisionWS_read)
     cell_values = [x if x is not None else 0 for x in cell_values]
+    
+    
+    
+    
     #---- �bertrage Werte in neue Entscheidungs-Datei
     mod.write_XLS_cells(mDec_GESAMT_cell, cell_values, decisionWS_write)
     #---- konvertiere Entscheidungen in numerischen np.array
@@ -431,7 +463,10 @@ for co in range(NUM_COMPANIES):
     # Auslandsentscheidungen (sicherheitshalber) auf Null setzen
     if PERIOD<MARKET_1:
         mDec_GESAMT[2] = 0
-
+    
+    
+    
+    
     #-- Fertigungs-/Produktions-Entscheidungen SOLID
     cell_values = mod.read_XLS_cells(pDec_SOLID_cell, decisionWS_read)
     cell_values = [x if x is not None else 0 for x in cell_values]
@@ -439,7 +474,10 @@ for co in range(NUM_COMPANIES):
     mod.write_XLS_cells(pDec_SOLID_cell, cell_values, decisionWS_write)
     #---- konvertiere Entscheidungen in numerischen np.array
     pDec_SOLID[:, co] = np.array(cell_values)
-
+    
+    
+    
+    
     #-- Fertigungs-/Produktions-Entscheidungen IDEAL
     cell_values = mod.read_XLS_cells(pDec_IDEAL_cell, decisionWS_read)
     cell_values = [x if x is not None else 0 for x in cell_values]
@@ -450,7 +488,10 @@ for co in range(NUM_COMPANIES):
     # Inlandsentscheidungen (sicherheitshalber) auf Null setzen
     if PERIOD<MARKET_2:
         pDec_IDEAL[[0, 1, 2]] = 0
-
+    
+    
+    
+    
     #-- Entscheidungen: Technische Anlagen neu / alt
     pAll_TA_neu[:, co] = mod.read_XLS_range(pAll_TA_neu_cell, decisionWS_read)
     pAll_TA_alt[:, co] = mod.read_XLS_range(pAll_TA_alt_cell, decisionWS_read)
@@ -487,7 +528,10 @@ for co in range(NUM_COMPANIES):
     # Gehalts-Entscheidungen (sicherheitshalber) eingrenzen
     pDec_HR[2, co] = max(pDec_HR[2, co],
                          max(pDec_HR_h[2, co, PERIOD+OFFSET-1] - 0.01, 0))
-
+    
+    
+    
+    
     #-- Finanz/Geld-Entscheidungen
     cell_values = mod.read_XLS_cells(fDec_FIN_cell, decisionWS_read)
     cell_values = [x if x is not None else 0 for x in cell_values]
