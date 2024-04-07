@@ -336,7 +336,7 @@
             // Next Round Button
             let nextRoundBtn = document.createElement('button');
             nextRoundBtn.textContent = 'Next Round';
-            nextRoundBtn.onclick = function () { }; // add Funktion for next round
+            nextRoundBtn.onclick = function () { nextRound(); }; // add Funktion for next round
             cellActions1.appendChild(nextRoundBtn);
 
             // Delete Button
@@ -547,6 +547,27 @@
             localStorage.removeItem('access_token');
             window.location.href = 'index.htm'; // Update with your login page URL
         });
+
+        function nextRound() {
+            fetch('http://127.0.0.1:5000/next_round', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'AUTHORIZATION': 'Bearer ' + localStorage.getItem('access_token')
+                },
+                body: JSON.stringify({ game_id: gameId })
+            }).then(function (response) {
+                if (response.ok) {
+                    alert('Next round started successfully');
+                    location.reload(); // Reload the page
+                } else {
+                    alert('Failed to start the next round');
+                }
+            }).catch(function (error) {
+                console.error('Error:', error);
+                alert('Error starting the next round');
+            });
+        }
 
     </script>
 </body>

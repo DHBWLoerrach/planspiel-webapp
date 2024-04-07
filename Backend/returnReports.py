@@ -116,13 +116,17 @@ class DataProcessor:
         # Set the numpy print options
         np.set_printoptions(precision=4, suppress=True)
 
-    def process_decisions(self, game_id, PERIOD, NUM_PERIODS, OFFSET, GMS_NAME = 'Pro021', GMS_VERSION = 'GMS_Pro_2.1', SETUP_FILE = 'MK_GMS_Pro-Setup.npz', NUM_CELLS = 5, UL_CELLS = 2):
+    def process_decisions(self, game_id, GMS_NAME = 'Pro021', GMS_VERSION = 'GMS_Pro_2.1', SETUP_FILE = 'MK_GMS_Pro-Setup.npz', NUM_CELLS = 5, UL_CELLS = 2):
         teams_query = text('''
             SELECT teams.name
             FROM games
             JOIN gameteams ON games.id = gameteams.game_id
             JOIN teams ON gameteams.teams_name = teams.name
             WHERE id = :game_id;''')
+
+        NUM_PERIODS = self.session.execute(text('SELECT num_periods FROM games WHERE id = :game_id'), {'game_id': game_id}).fetchone()[0]
+        PERIOD = self.session.execute(text('SELECT current_period FROM games WHERE id = :game_id'), {'game_id': game_id}).fetchone()[0]
+        OFFSET = self.session.execute(text('SELECT offset FROM games WHERE id = :game_id'), {'game_id': game_id}).fetchone()[0]
 
         teams = self.session.execute(teams_query, {'game_id': game_id}).fetchall()
         current_period = self.session.execute(text('SELECT current_period FROM games WHERE id = :game_id'), {'game_id': game_id}).fetchone()[0]
