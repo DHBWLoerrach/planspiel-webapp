@@ -283,6 +283,8 @@
                                 <td style="text-align: left;">Stk.</td>
                                 <td><input type="number" id="inputSolidLiefermengeSondermarkt" value=none></td>
                                 <td></td>
+                                <td><span id="sumLiefermengeSonmdermarkt"></span></td>
+                                <td></td>
                                 <td></td>
                             </tr>
                             <tr height="19">
@@ -665,6 +667,7 @@
             "sumBetriebsstoffe": ["inputSolidHilfsstoffe", "inputIdealHilfsstoffe"],
             "sumMaterialS": ["inputSolidMaterialS"],
             "sumMaterialI": ["inputMaterialI"],
+            "sumLiefermengeSonmdermarkt": ["inputSolidLiefermengeSondermarkt"]           
         };
 
 
@@ -908,10 +911,10 @@
                 selectNeuAnlagenWerkstaette08: document.getElementById('selectNeuAnlagenWerkstaette08').value,
 
                 //Human Resources
-                gesamtFertigungspersonal: document.getElementById('gesamtFertigungspersonal'),
-                gesamtPersonalentwicklung: document.getElementById('gesamtPersonalentwicklung'),
-                gesamtGehaltsaufschlag: document.getElementById('gesamtGehaltsaufschlag'),
-                gesamtInvestitionenBGA: document.getElementById('gesamtInvestitionenBGA'),
+                gesamtFertigungspersonal: document.getElementById('gesamtFertigungspersonal').value,
+                gesamtPersonalentwicklung: document.getElementById('gesamtPersonalentwicklung').value,
+                gesamtGehaltsaufschlag: document.getElementById('gesamtGehaltsaufschlag').value,
+                gesamtInvestitionenBGA: document.getElementById('gesamtInvestitionenBGA').value,
 
                 //Finanzwirtschaft
                 inputDarlehenS : document.getElementById('inputDarlehenS').value,
