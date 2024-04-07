@@ -11,6 +11,10 @@ from io import BytesIO
 from datetime import datetime
 from flask_cors import CORS
 
+from returnReports import DataProcessor
+
+localDataProcessor = DataProcessor('mysql+pymysql://root:@localhost/GameSimulationDB', os.getcwd())
+
 # Initialize app
 app = Flask(__name__)
 app.config['JWT_SECRET_KEY'] = 'your_secret_key'  # Ensure this is set
@@ -566,6 +570,17 @@ def submit_turn():
     db.session.commit()
 
     return jsonify({"message": "Turn submitted successfully"}), 201
+
+@app.route('/next_round', methods=['POST'])
+def next_round():
+    game_id = request.json.get('game_id')
+    game = Game.query.get_or_404(game_id)
+    game.current_period += 1
+    db.session.commit()
+
+    localDataProcessor.process_decisions(game_id)
+
+    return jsonify({"message": "Next round started successfully"}), 200
 
 # Run Server
 if __name__ == '__main__':
