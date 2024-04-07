@@ -1,0 +1,107 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Login</title>
+    <style>
+        body {
+            font-family: "Roboto", sans-serif;
+            margin: 0;
+            padding: 0;
+            width: 100%;
+            height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            background-color: #2f3136;
+            color: #ffffff;
+        }
+
+        h2 {
+            color: #ffffff;
+        }
+
+        form {
+            background-color: #36393F;
+            padding: 20px;
+            border-radius: 8px;
+        }
+
+        label {
+            color: #b9bbbe;
+        }
+
+        input[type="text"],
+        input[type="password"] {
+            width: calc(100% - 22px);
+            padding: 10px;
+            margin-bottom: 10px;
+            border-radius: 4px;
+            border: 1px solid #202225;
+            background-color: #40444B;
+            color: #ffffff;
+        }
+
+        input[type="submit"] {
+            width: 100%;
+            padding: 10px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            background-color: #7289DA;
+            color: #ffffff;
+            transition: background-color 0.3s ease;
+        }
+
+        input[type="submit"]:hover {
+            background-color: #677bc4;
+        }
+    </style>
+</head>
+<body>
+    <div class="login-container">
+        <h2>Login</h2>
+        <form id="loginForm">
+            <label for="name">Login Name:</label><br>
+            <input type="text" id="name" name="name"><br>
+            <label for="password">Password:</label><br>
+            <input type="password" id="password" name="password"><br><br>
+            <input type="submit" value="Login">
+        </form>
+    </div>
+
+    <script>
+        document.getElementById('loginForm').addEventListener('submit', function(e) {
+            e.preventDefault();
+            const name = document.getElementById('name').value;
+            const password = document.getElementById('password').value;
+
+            fetch('http://127.0.0.1:5000/login', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({ name, password })
+            })
+            .then(response => response.json())
+            .then(data => {
+                console.log('Success:', data);
+                localStorage.setItem('access_token', data.access_token);
+                localStorage.setItem('login_name', name);  // Store the login name
+
+                // Redirect based on the role
+                if (data.is_gamemaster) {
+                    window.location.href = 'gamemaster.htm';
+                } else {
+                    window.location.href = 'player.htm';
+                }
+            })
+            .catch((error) => {
+                console.error('Error:', error);
+            });
+        });
+    </script>
+
+</body>
+</html>

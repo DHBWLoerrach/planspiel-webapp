@@ -1,0 +1,575 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Game Master Dashboard</title>
+    <!-- Add Select2 CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/select2/dist/css/select2.min.css" rel="stylesheet" />
+    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500&display=swap" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/select2/dist/css/select2.min.css" rel="stylesheet" />
+    <style>
+        body {
+            font-family: "Roboto", sans-serif;
+            background-color: #2f3136;
+            color: #ffffff;
+            margin: 0;
+            padding: 20px;
+        }
+
+        h2,
+        h3 {
+            color: #ffffff;
+        }
+
+        button {
+            background-color: #7289DA;
+            color: #ffffff;
+            padding: 10px 15px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            margin-bottom: 20px;
+            transition: background-color 0.3s ease;
+        }
+
+        button:hover {
+            background-color: #677bc4;
+        }
+
+        form {
+            background-color: #36393F;
+            padding: 20px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+        }
+
+        label {
+            color: #b9bbbe;
+        }
+
+        input[type="text"],
+        input[type="password"],
+        select {
+            width: 100%;
+            padding: 10px;
+            margin: 10px 0;
+            background-color: #40444B;
+            border: 1px solid #202225;
+            border-radius: 4px;
+            color: #ffffff;
+        }
+
+        .select2-container .select2-selection--multiple {
+            background-color: #40444B;
+            border: 1px solid #202225;
+        }
+
+        .select2-dropdown {
+            background-color: #40444B;
+            color: #ffffff;
+        }
+
+        .select2-results__option {
+            padding-right: 20px;
+            background-color: #40444B;
+            color: #ffffff;
+        }
+
+        .select2-results__option--highlighted[aria-selected] {
+            background-color: #7289DA;
+        }
+
+        #gamesTable,
+        #teamsTable {
+            width: 100%;
+            border-collapse: collapse;
+            background-color: #36393F;
+            margin-bottom: 20px;
+        }
+
+        #gamesTable th,
+        #gamesTable td,
+        #teamsTable th,
+        #teamsTable td {
+            border: 1px solid #202225;
+            padding: 8px;
+            text-align: left;
+            color: #ffffff;
+        }
+
+        #gamesTable thead,
+        #teamsTable thead {
+            background-color: #40444B;
+        }
+
+        #gamesTable button,
+        #teamsTable button {
+            margin-right: 10px;
+            /* Fügt rechts an jedem Button ein Padding hinzu */
+        }
+
+        #gamesTable button:last-child,
+        #teamsTable button:last-child {
+            margin-right: 0;
+            /* Entfernt das rechte Padding des letzten Buttons in der Zelle */
+        }
+    </style>
+</head>
+
+<body>
+    <h2>Game Master Dashboard</h2>
+
+    <!-- Register New Team Form -->
+    <button id="registerTeamBtn">Register New Team</button>
+    <div id="registerTeamForm" style="display:none;">
+        <h3>Register New Team</h3>
+        <form id="newTeamForm">
+            <label for="newTeamName">Team Name:</label><br>
+            <input type="text" id="newTeamName" name="newTeamName"><br>
+            <label for="newTeamPassword">Password:</label><br>
+            <input type="password" id="newTeamPassword" name="newTeamPassword"><br><br>
+            <input type="submit" value="Register Team">
+        </form>
+    </div>
+
+    <!-- Register New Game Form -->
+    <button id="registerGameBtn">Register New Game</button>
+    <div id="registerGameForm" style="display:none;">
+        <h3>Register New Game</h3>
+        <form id="newGameForm">
+            <label for="newGameName">Game Name:</label><br>
+            <input type="text" id="newGameName" name="newGameName"><br>
+            <label for="newGameTeams">Select Teams:</label><br>
+            <select multiple id="newGameTeams" style="width: 200px;">
+            </select><br><br>
+
+            <label for="marketActivations">Select Active Markets:</label><br>
+            <select multiple id="marketActivations" style="width: 200px;">
+                <option value="market_0_activation">Market 0 (SOLID - Inland)</option>
+                <option value="market_1_activation">Market 1 (SOLID - Ausland)</option>
+                <option value="market_2_activation">Market 2 (IDEAL - Inland)</option>
+                <option value="market_3_activation">Market 3 (IDEAL - Ausland)</option>
+            </select><br><br>
+
+            <label for="numCells">Number of Cells:</label><br>
+            <input type="number" id="numCells" name="numCellsInput" value=10><br>
+
+            <label for="numPeriods">Number of Periods:</label><br>
+            <input type="number" id="numPeriods" name="numPeriodsInput" value="10"><br>
+
+            <label for="offset">Offset:</label><br>
+            <input type="number" id="offset" name="offsetInput" value="10"><br>
+
+            <label for="idealRd">Ideal R&D:</label><br>
+            <input type="number" id="idealRd" name="idealRdInput" value="10"><br>
+
+            <label for="costIndustryReport">Cost Industry Report:</label><br>
+            <input type="number" id="costIndustryReport" name="costIndustryReportInput" value="10"><br>
+
+            <label for="costMarketReport">Cost Market Report:</label><br>
+            <input type="number" id="costMarketReport" name="costMarketReportInput" value="10"><br>
+
+            <input type="submit" value="Register Game">
+        </form>
+    </div>
+
+    <!-- List of Active Games -->
+    <h3>Active Games:</h3>
+    <table id="gamesTable">
+        <thead>
+            <tr>
+                <th>Game Name</th>
+                <th>Status</th>
+                <th>Teams</th>
+                <th></th> <!-- Empty header for next round buttons -->
+                <!-- Empty header for Delete buttons -->
+            </tr>
+        </thead>
+        <tbody>
+        </tbody>
+    </table>
+
+    <h3>Teams:</h3>
+    <table id="teamsTable">
+        <thead>
+            <tr>
+                <th>Team Name</th>
+                <th>Games</th>
+                <th></th> <!-- Empty header for Change Passowrd buttons -->
+                <!-- Empty header for delete buttons -->
+            </tr>
+        </thead>
+        <tbody>
+        </tbody>
+    </table>
+
+    <!-- Logout Button -->
+    <button id="logoutBtn">Logout</button>
+
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/select2/dist/js/select2.min.js"></script>
+    <script>
+        $(document).ready(function () {
+            $('#newGameTeams').select2();
+            $('#marketActivations').select2(); // Initialize Select2 for marketActivations
+        });
+
+        // Function to Toggle Display of Forms
+        function toggleDisplay(elementId) {
+            var element = document.getElementById(elementId);
+            element.style.display = element.style.display === 'none' ? 'block' : 'none';
+        }
+
+        // Event Listener for Register Team Button
+        document.getElementById('registerTeamBtn').addEventListener('click', function () {
+            toggleDisplay('registerTeamForm');
+        });
+
+        // Event Listener for Register Game Button
+        document.getElementById('registerGameBtn').addEventListener('click', function () {
+            toggleDisplay('registerGameForm');
+            fetchTeamsAndGames(); // Fetch teams when opening the game registration form
+        });
+
+
+        // Handle New Team Registration Submission
+        document.getElementById('newTeamForm').addEventListener('submit', function (e) {
+            e.preventDefault();
+            const teamName = document.getElementById('newTeamName').value;
+            const teamPassword = document.getElementById('newTeamPassword').value;
+            const token = localStorage.getItem('access_token');
+
+            fetch('http://127.0.0.1:5000/gamemaster/register_team', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': 'Bearer ' + token
+                },
+                body: JSON.stringify({ name: teamName, password: teamPassword })
+            })
+                .then(response => {
+                    if (response.ok) {
+                        alert('Team Registered Successfully!');
+                        location.reload(); // Reload the page
+                    } else {
+                        alert('Failed to register the team');
+                    }
+                })
+                .catch((error) => {
+                    console.error('Error:', error);
+                    alert('Error registering the team');
+                });
+        });
+
+        function fetchTeamsAndGames() {
+            const teamSelect = document.getElementById('newGameTeams');
+            const gamesTable = document.getElementById('gamesTable');
+            const teamsTable = document.getElementById('teamsTable');
+
+            if (!teamSelect || !gamesTable || !teamsTable) {
+                console.error('One or more required elements are missing.');
+                return;
+            }
+
+            teamSelect.innerHTML = ''; // Clear existing options
+
+            const gamesTableBody = gamesTable.getElementsByTagName('tbody')[0];
+            const teamsTableBody = teamsTable.getElementsByTagName('tbody')[0];
+
+            if (!gamesTableBody || !teamsTableBody) {
+                console.error('Table body for games or teams is missing.');
+                return;
+            }
+
+            gamesTableBody.innerHTML = ''; // Clear existing rows
+            teamsTableBody.innerHTML = ''; // Clear existing rows
+
+            const token = localStorage.getItem('access_token');
+
+            // Fetch teams data
+            fetch('http://127.0.0.1:5000/teams', {
+                method: 'GET',
+                headers: {
+                    'Authorization': 'Bearer ' + token
+                }
+            })
+                .then(response => response.json())
+                .then(data => {
+                    data.forEach(team => {
+                        let option = document.createElement('option');
+                        option.value = team.name;
+                        option.textContent = team.name;
+                        teamSelect.appendChild(option);
+
+                        addTeamRow(team, teamsTableBody);
+                    });
+                })
+                .catch(error => console.error('Error:', error));
+
+            // Fetch games data
+            fetch('http://127.0.0.1:5000/games', {
+                method: 'GET',
+                headers: {
+                    'Authorization': 'Bearer ' + token
+                }
+            })
+                .then(response => response.json())
+                .then(gamesData => {
+                    gamesData.forEach(game => addGameRow(game, gamesTableBody));
+                })
+                .catch(error => console.error('Error:', error));
+        }
+
+        function addGameRow(game, gamesTableBody) {
+            let row = gamesTableBody.insertRow();
+            let cellName = row.insertCell(0);
+            let cellStatus = row.insertCell(1);
+            let cellTeams = row.insertCell(2);
+            let cellActions1 = row.insertCell(3);
+
+            cellName.textContent = game.name;
+            cellStatus.textContent = game.status;
+            cellTeams.textContent = game.teams.map(team => team.name).join(', ');
+
+            // Next Round Button
+            let nextRoundBtn = document.createElement('button');
+            nextRoundBtn.textContent = 'Next Round';
+            nextRoundBtn.onclick = function () { nextRound(); }; // add Funktion for next round
+            cellActions1.appendChild(nextRoundBtn);
+
+            // Delete Button
+            let deleteBtn = document.createElement('button');
+            deleteBtn.textContent = 'Delete';
+            deleteBtn.onclick = function () { deleteGame(game.id); };
+            cellActions1.appendChild(deleteBtn);
+        }
+
+
+        function addTeamRow(team, teamsTableBody) {
+            let row = teamsTableBody.insertRow();
+            let cellName = row.insertCell(0);
+            let cellGames = row.insertCell(1);
+            let cellActions = row.insertCell(2);
+
+            cellName.textContent = team.name;
+            cellGames.textContent = team.games.map(game => game.name).join(', ');
+
+            // Change Password Button
+            let changePasswordBtn = document.createElement('button');
+            changePasswordBtn.textContent = 'Change Password';
+            changePasswordBtn.onclick = function () { changeTeamPassword(team.name); };
+            cellActions.appendChild(changePasswordBtn); // Using cellActions to append changePasswordBtn
+
+            // Delete Button
+            let deleteBtn = document.createElement('button');
+            deleteBtn.textContent = 'Delete';
+            deleteBtn.onclick = function () { deleteTeam(team.name); };
+            cellActions.appendChild(deleteBtn); // Using cellActions to append deleteBtn
+        }
+
+
+
+        // Handle New Game Registration Submission
+        document.getElementById('newGameForm').addEventListener('submit', function (e) {
+            e.preventDefault();
+            const gameName = document.getElementById('newGameName').value;
+
+
+            const selectedTeams = Array.from(document.getElementById('newGameTeams').selectedOptions).map(option => option.value);
+            const selectedMarkets = Array.from(document.getElementById('marketActivations').selectedOptions).map(option => option.value);;
+
+            const marketActivations = {
+                market_0_activation: selectedMarkets.includes("market_0_activation"),
+                market_1_activation: selectedMarkets.includes("market_1_activation"),
+                market_2_activation: selectedMarkets.includes("market_2_activation"),
+                market_3_activation: selectedMarkets.includes("market_3_activation")
+            };
+
+            const numCells = document.getElementById('numCells').value;
+            const numPeriods = document.getElementById('numPeriods').value;
+            const offset = document.getElementById('offset').value;
+            const idealRd = document.getElementById('idealRd').value;
+            const costIndustryReport = document.getElementById('costIndustryReport').value;
+            const costMarketReport = document.getElementById('costMarketReport').value;
+
+            const gameData = {
+                name: gameName,
+                team_names: selectedTeams,
+                status: 'active',
+                num_companies: parseInt(selectedTeams.length, 10),
+                num_periods: parseInt(numPeriods, 10),
+                offset: parseInt(offset, 10),
+                num_markets: parseInt(selectedMarkets.length, 10),
+                num_cells: parseInt(numCells, 10),
+                market_0_activation: marketActivations.market_0_activation,
+                market_1_activation: marketActivations.market_1_activation,
+                market_2_activation: marketActivations.market_2_activation,
+                market_3_activation: marketActivations.market_3_activation,
+                ideal_rd: parseInt(idealRd, 10),
+                cost_industry_report: parseFloat(costIndustryReport),
+                cost_market_report: parseFloat(costMarketReport)
+            };
+
+            const token = localStorage.getItem('access_token');
+
+            const requestData = JSON.stringify(gameData);
+
+            fetch('http://127.0.0.1:5000/gamemaster/register_game', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': 'Bearer ' + token
+                },
+                body: requestData
+            })
+                .then(response => {
+                    if (response.ok) {
+                        alert('Game Registered Successfully!');
+                        location.reload(); // Reload the page
+                    } else {
+                        alert('Failed to register the game');
+                    }
+                })
+                .catch((error) => {
+                    console.error('Error:', error);
+                    alert('Error registering the game');
+                });
+        });
+
+        // Function to handle game deletion
+        function deleteGame(gameId) {
+            if (!confirm('Are you sure you want to delete this game?')) {
+                return; // Stop if user cancels
+            }
+
+            const token = localStorage.getItem('access_token');
+            fetch(`http://127.0.0.1:5000/game/${gameId}`, {
+                method: 'DELETE',
+                headers: {
+                    'Authorization': 'Bearer ' + token
+                }
+            })
+                .then(response => {
+                    if (response.ok) {
+                        alert('Game deleted successfully');
+                        location.reload(); // Reload the page
+                    } else {
+                        alert('Failed to delete the game');
+                    }
+                })
+                .catch(error => {
+                    console.error('Error:', error);
+                    alert('Error deleting the game');
+                });
+        }
+
+        // Remove the game row from the table
+        function removeGameRow(gameId) {
+            let gamesTableBody = document.getElementById('gamesTable').getElementsByTagName('tbody')[0];
+            for (let row of gamesTableBody.rows) {
+                if (row.getAttribute('data-game-id') == gameId) {
+                    gamesTableBody.deleteRow(row.rowIndex);
+                    break;
+                }
+            }
+        }
+
+        function deleteTeam(teamId) {
+            if (!confirm('Are you sure you want to delete this team?')) {
+                return;
+            }
+
+            const token = localStorage.getItem('access_token');
+            fetch(`http://127.0.0.1:5000/teams/${teamId}`, {
+                method: 'DELETE',
+                headers: {
+                    'Authorization': 'Bearer ' + token
+                }
+            })
+                .then(response => {
+                    if (response.ok) {
+                        alert('Team deleted successfully');
+                        location.reload(); // Reload the page to update the team list
+                    } else {
+                        alert('Failed to delete the team');
+                    }
+                })
+                .catch(error => {
+                    console.error('Error:', error);
+                    alert('Error deleting the team');
+                });
+        }
+
+        function changeTeamPassword(teamName) {
+            // Prompt the user to enter a new password
+            let newPassword = prompt("Enter new password for " + teamName + ":");
+
+            // Check if a password was entered
+            if (newPassword) {
+                fetch('http://127.0.0.1:5000/teams/' + encodeURIComponent(teamName) + '/change_password', {
+                    method: 'PUT',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': 'Bearer ' + localStorage.getItem('access_token') // Assumes token is stored in local storage
+                    },
+                    body: JSON.stringify({ password: newPassword })
+                })
+                    .then(response => {
+                        if (response.ok) {
+                            return response.json();
+                        } else {
+                            throw new Error('Something went wrong');
+                        }
+                    })
+                    .then(data => {
+                        alert("Password changed successfully");
+                    })
+                    .catch((error) => {
+                        console.error('Error:', error);
+                        alert("Failed to change password");
+                    });
+            } else {
+                // User cancelled the prompt or entered an empty value
+                alert("Password change cancelled");
+            }
+        }
+
+
+        // Fetch and display games on page load
+        document.addEventListener('DOMContentLoaded', function () {
+            fetchTeamsAndGames();
+        });
+
+        // Logout functionality
+        document.getElementById('logoutBtn').addEventListener('click', function () {
+            localStorage.removeItem('access_token');
+            window.location.href = 'index.htm'; // Update with your login page URL
+        });
+
+        function nextRound() {
+            fetch('http://127.0.0.1:5000/next_round', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'AUTHORIZATION': 'Bearer ' + localStorage.getItem('access_token')
+                },
+                body: JSON.stringify({ game_id: gameId })
+            }).then(function (response) {
+                if (response.ok) {
+                    alert('Next round started successfully');
+                    location.reload(); // Reload the page
+                } else {
+                    alert('Failed to start the next round');
+                }
+            }).catch(function (error) {
+                console.error('Error:', error);
+                alert('Error starting the next round');
+            });
+        }
+
+    </script>
+</body>
+
+</html>
