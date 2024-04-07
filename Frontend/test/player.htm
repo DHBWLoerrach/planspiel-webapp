@@ -197,6 +197,7 @@
                                 <td style="text-align: left;">EUR/Stk.</td>
                                 <td><input type="number" id="inputSolidVerkaufspreisInland" value=none></td>
                                 <td><input type="number" id="inputIdealVerkaufspreisInland" value=none></td>
+                                <td><span id="sumVerkaufspreisInland"></span></td>
                                 <td></td>
                             </tr>
                             <tr height="19">
@@ -205,6 +206,7 @@
                                 <td style="text-align: left;">FCU/Stk.</td>
                                 <td><input type="number" id="inputSolidVerkaufspreisAusland" value=none></td>
                                 <td><input type="number" id="inputIdealVerkaufspreisAusland" value=none></td>
+                                <td><span id="sumVerkaufspreisAusland"></span></td>
                                 <td></td>
                             </tr>
                             <tr height="30">
@@ -331,6 +333,7 @@
                                 <td>Stk.</td>
                                 <td><input type="number" id="inputSolidFertigungsmengen" value=none></td>
                                 <td><input type="number" id="inputIdealFertigungsmengen" value=none></td>
+                                <td><span id="sumFertigungsmengen"></span></td>
                                 <td></td>
                             </tr>
                             <tr height="30">
@@ -659,6 +662,8 @@
         let games = []; // Store the games data fetched from the API
 
         const sumConfig = {
+            "sumVerkaufspreisInland": ["inputSolidVerkaufspreisInland","inputIdealVerkaufspreisInland"],
+            "sumVerkaufspreisAusland": ["inputSolidVerkaufspreisAusland","inputIdealVerkaufspreisAusland"],
             "sumFETechnik": ["inputSolidFETechnik", "inputIdealFETechnik"],
             "sumFEHaptik": ["inputSolidFEHaptik", "inputIdealFEHaptik"],
             "sumProduktbewerbungInland": ["inputSolidProduktwerbungInland", "inputIdealProduktwerbungInland"],
@@ -667,7 +672,8 @@
             "sumBetriebsstoffe": ["inputSolidHilfsstoffe", "inputIdealHilfsstoffe"],
             "sumMaterialS": ["inputSolidMaterialS"],
             "sumMaterialI": ["inputMaterialI"],
-            "sumLiefermengeSonmdermarkt": ["inputSolidLiefermengeSondermarkt"]           
+            "sumLiefermengeSonmdermarkt": ["inputSolidLiefermengeSondermarkt"],
+            "sumFertigungsmengen": ["inputSolidFertigungsmengen","inputIdealFertigungsmengen"],           
         };
 
 

@@ -569,4 +569,4 @@ def submit_turn():
 
 # Run Server
 if __name__ == '__main__':
-    app.run(debug=True)
+     app.run(debug=True)
