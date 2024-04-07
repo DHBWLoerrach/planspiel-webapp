@@ -164,6 +164,7 @@
                 <th>Status</th>
                 <th>Teams</th>
                 <th></th>
+                <th></th> <!-- Empty header for next round buttons -->
             </tr>
         </thead>
         <tbody>
@@ -306,6 +307,7 @@
             let cellStatus = row.insertCell(1);
             let cellTeams = row.insertCell(2);
             let cellDelete = row.insertCell(3);
+            let cellNextRound = row.insertCell(4);
 
             cellName.textContent = game.name;
             cellStatus.textContent = game.status;
@@ -315,6 +317,11 @@
             deleteBtn.textContent = 'Delete';
             deleteBtn.onclick = function () { deleteGame(game.id); };
             cellDelete.appendChild(deleteBtn);
+
+            let nextRoundBtn = document.createElement('button');
+            nextRoundBtn.textContent = 'Next Round';
+            nextRoundBtn.onclick = function () {  }; // add Funktion for next round
+            cellNextRound.appendChild(nextRoundBtn);
         }
 
 
