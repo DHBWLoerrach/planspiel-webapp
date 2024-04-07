@@ -531,20 +531,20 @@ def submit_turn():
 
         # Technische Anlagen
         selectNeuAnlagenWerkstaette01 = request.json.get('selectNeuAnlagenWerkstaette01'),
-        selectNeuAnlagenWerkstaette01 = request.json.get('selectNeuAnlagenWerkstaette02'),
-        selectNeuAnlagenWerkstaette01 = request.json.get('selectNeuAnlagenWerkstaette03'),
-        selectNeuAnlagenWerkstaette01 = request.json.get('selectNeuAnlagenWerkstaette04'),
-        selectNeuAnlagenWerkstaette01 = request.json.get('selectNeuAnlagenWerkstaette05'),
-        selectNeuAnlagenWerkstaette01 = request.json.get('selectNeuAnlagenWerkstaette06'),
-        selectNeuAnlagenWerkstaette01 = request.json.get('selectNeuAnlagenWerkstaette07'),
+        selectNeuAnlagenWerkstaette02 = request.json.get('selectNeuAnlagenWerkstaette02'),
+        selectNeuAnlagenWerkstaette03 = request.json.get('selectNeuAnlagenWerkstaette03'),
+        selectNeuAnlagenWerkstaette04 = request.json.get('selectNeuAnlagenWerkstaette04'),
+        selectNeuAnlagenWerkstaette05 = request.json.get('selectNeuAnlagenWerkstaette05'),
+        selectNeuAnlagenWerkstaette06 = request.json.get('selectNeuAnlagenWerkstaette06'),
+        selectNeuAnlagenWerkstaette07 = request.json.get('selectNeuAnlagenWerkstaette07'),
         selectNeuAnlagenWerkstaette08 = request.json.get('selectNeuAnlagenWerkstaette08'),
         selectAltAnlagenWerkstaette01 = request.json.get('selectAltAnlagenWerkstaette01'),
-        selectAltAnlagenWerkstaette01 = request.json.get('selectAltAnlagenWerkstaette02'),
-        selectAltAnlagenWerkstaette01 = request.json.get('selectAltAnlagenWerkstaette03'),
-        selectAltAnlagenWerkstaette01 = request.json.get('selectAltAnlagenWerkstaette04'),
-        selectAltAnlagenWerkstaette01 = request.json.get('selectAltAnlagenWerkstaette05'),
-        selectAltAnlagenWerkstaette01 = request.json.get('selectAltAnlagenWerkstaette06'),
-        selectAltAnlagenWerkstaette01 = request.json.get('selectAltAnlagenWerkstaette07'),
+        selectAltAnlagenWerkstaette02 = request.json.get('selectAltAnlagenWerkstaette02'),
+        selectAltAnlagenWerkstaette03 = request.json.get('selectAltAnlagenWerkstaette03'),
+        selectAltAnlagenWerkstaette04 = request.json.get('selectAltAnlagenWerkstaette04'),
+        selectAltAnlagenWerkstaette05 = request.json.get('selectAltAnlagenWerkstaette05'),
+        selectAltAnlagenWerkstaette06 = request.json.get('selectAltAnlagenWerkstaette06'),
+        selectAltAnlagenWerkstaette07 = request.json.get('selectAltAnlagenWerkstaette07'),
         selectAltAnlagenWerkstaette08 = request.json.get('selectAltAnlagenWerkstaette08'),
 
         # Human Resources
@@ -566,8 +566,6 @@ def submit_turn():
     db.session.commit()
 
     return jsonify({"message": "Turn submitted successfully"}), 201
-
-
 
 # Run Server
 if __name__ == '__main__':
