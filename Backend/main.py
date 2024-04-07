@@ -139,8 +139,20 @@ class Turn(db.Model):
 
     # Technische Anlagen
     selectNeuAnlagenWerkstaette01 = db.Column(db.String(100))
+    selectNeuAnlagenWerkstaette02 = db.Column(db.String(100))
+    selectNeuAnlagenWerkstaette03 = db.Column(db.String(100))
+    selectNeuAnlagenWerkstaette04 = db.Column(db.String(100))
+    selectNeuAnlagenWerkstaette05 = db.Column(db.String(100))
+    selectNeuAnlagenWerkstaette06 = db.Column(db.String(100))
+    selectNeuAnlagenWerkstaette07 = db.Column(db.String(100))
     selectNeuAnlagenWerkstaette08 = db.Column(db.String(100))
     selectAltAnlagenWerkstaette01 = db.Column(db.String(100))
+    selectAltAnlagenWerkstaette02 = db.Column(db.String(100))
+    selectAltAnlagenWerkstaette03 = db.Column(db.String(100))
+    selectAltAnlagenWerkstaette04 = db.Column(db.String(100))
+    selectAltAnlagenWerkstaette05 = db.Column(db.String(100))
+    selectAltAnlagenWerkstaette06 = db.Column(db.String(100))
+    selectAltAnlagenWerkstaette07 = db.Column(db.String(100))
     selectAltAnlagenWerkstaette08 = db.Column(db.String(100))
 
     # Human Resources
@@ -519,8 +531,20 @@ def submit_turn():
 
         # Technische Anlagen
         selectNeuAnlagenWerkstaette01 = request.json.get('selectNeuAnlagenWerkstaette01'),
+        selectNeuAnlagenWerkstaette01 = request.json.get('selectNeuAnlagenWerkstaette02'),
+        selectNeuAnlagenWerkstaette01 = request.json.get('selectNeuAnlagenWerkstaette03'),
+        selectNeuAnlagenWerkstaette01 = request.json.get('selectNeuAnlagenWerkstaette04'),
+        selectNeuAnlagenWerkstaette01 = request.json.get('selectNeuAnlagenWerkstaette05'),
+        selectNeuAnlagenWerkstaette01 = request.json.get('selectNeuAnlagenWerkstaette06'),
+        selectNeuAnlagenWerkstaette01 = request.json.get('selectNeuAnlagenWerkstaette07'),
         selectNeuAnlagenWerkstaette08 = request.json.get('selectNeuAnlagenWerkstaette08'),
         selectAltAnlagenWerkstaette01 = request.json.get('selectAltAnlagenWerkstaette01'),
+        selectAltAnlagenWerkstaette01 = request.json.get('selectAltAnlagenWerkstaette02'),
+        selectAltAnlagenWerkstaette01 = request.json.get('selectAltAnlagenWerkstaette03'),
+        selectAltAnlagenWerkstaette01 = request.json.get('selectAltAnlagenWerkstaette04'),
+        selectAltAnlagenWerkstaette01 = request.json.get('selectAltAnlagenWerkstaette05'),
+        selectAltAnlagenWerkstaette01 = request.json.get('selectAltAnlagenWerkstaette06'),
+        selectAltAnlagenWerkstaette01 = request.json.get('selectAltAnlagenWerkstaette07'),
         selectAltAnlagenWerkstaette08 = request.json.get('selectAltAnlagenWerkstaette08'),
 
         # Human Resources
