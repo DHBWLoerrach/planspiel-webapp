@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -17,7 +18,8 @@
             padding: 20px;
         }
 
-        h2, h3 {
+        h2,
+        h3 {
             color: #ffffff;
         }
 
@@ -79,25 +81,43 @@
             background-color: #7289DA;
         }
 
-        #gamesTable, #teamsTable {
-            width: 100%;    
+        #gamesTable,
+        #teamsTable {
+            width: 100%;
             border-collapse: collapse;
             background-color: #36393F;
             margin-bottom: 20px;
         }
 
-        #gamesTable th, #gamesTable td, #teamsTable th, #teamsTable td {
+        #gamesTable th,
+        #gamesTable td,
+        #teamsTable th,
+        #teamsTable td {
             border: 1px solid #202225;
             padding: 8px;
             text-align: left;
             color: #ffffff;
         }
 
-        #gamesTable thead, #teamsTable thead {
+        #gamesTable thead,
+        #teamsTable thead {
             background-color: #40444B;
+        }
+
+        #gamesTable button,
+        #teamsTable button {
+            margin-right: 10px;
+            /* Fügt rechts an jedem Button ein Padding hinzu */
+        }
+
+        #gamesTable button:last-child,
+        #teamsTable button:last-child {
+            margin-right: 0;
+            /* Entfernt das rechte Padding des letzten Buttons in der Zelle */
         }
     </style>
 </head>
+
 <body>
     <h2>Game Master Dashboard</h2>
 
@@ -163,8 +183,8 @@
                 <th>Game Name</th>
                 <th>Status</th>
                 <th>Teams</th>
-                <th></th>
                 <th></th> <!-- Empty header for next round buttons -->
+                <!-- Empty header for Delete buttons -->
             </tr>
         </thead>
         <tbody>
@@ -177,7 +197,8 @@
             <tr>
                 <th>Team Name</th>
                 <th>Games</th>
-                <th></th> <!-- Empty header for delete buttons -->
+                <th></th> <!-- Empty header for Change Passowrd buttons -->
+                <!-- Empty header for delete buttons -->
             </tr>
         </thead>
         <tbody>
@@ -190,7 +211,7 @@
     <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/select2/dist/js/select2.min.js"></script>
     <script>
-        $(document).ready(function() {
+        $(document).ready(function () {
             $('#newGameTeams').select2();
             $('#marketActivations').select2(); // Initialize Select2 for marketActivations
         });
@@ -202,19 +223,19 @@
         }
 
         // Event Listener for Register Team Button
-        document.getElementById('registerTeamBtn').addEventListener('click', function() {
+        document.getElementById('registerTeamBtn').addEventListener('click', function () {
             toggleDisplay('registerTeamForm');
         });
 
         // Event Listener for Register Game Button
-        document.getElementById('registerGameBtn').addEventListener('click', function() {
+        document.getElementById('registerGameBtn').addEventListener('click', function () {
             toggleDisplay('registerGameForm');
             fetchTeamsAndGames(); // Fetch teams when opening the game registration form
         });
 
 
         // Handle New Team Registration Submission
-        document.getElementById('newTeamForm').addEventListener('submit', function(e) {
+        document.getElementById('newTeamForm').addEventListener('submit', function (e) {
             e.preventDefault();
             const teamName = document.getElementById('newTeamName').value;
             const teamPassword = document.getElementById('newTeamPassword').value;
@@ -228,18 +249,18 @@
                 },
                 body: JSON.stringify({ name: teamName, password: teamPassword })
             })
-            .then(response => {
-                if (response.ok) {
-                    alert('Team Registered Successfully!');
-                    location.reload(); // Reload the page
-                } else {
-                    alert('Failed to register the team');
-                }
-            })
-            .catch((error) => {
-                console.error('Error:', error);
-                alert('Error registering the team');
-            });
+                .then(response => {
+                    if (response.ok) {
+                        alert('Team Registered Successfully!');
+                        location.reload(); // Reload the page
+                    } else {
+                        alert('Failed to register the team');
+                    }
+                })
+                .catch((error) => {
+                    console.error('Error:', error);
+                    alert('Error registering the team');
+                });
         });
 
         function fetchTeamsAndGames() {
@@ -274,18 +295,18 @@
                     'Authorization': 'Bearer ' + token
                 }
             })
-            .then(response => response.json())
-            .then(data => {
-                data.forEach(team => {
-                    let option = document.createElement('option');
-                    option.value = team.name;
-                    option.textContent = team.name;
-                    teamSelect.appendChild(option);
+                .then(response => response.json())
+                .then(data => {
+                    data.forEach(team => {
+                        let option = document.createElement('option');
+                        option.value = team.name;
+                        option.textContent = team.name;
+                        teamSelect.appendChild(option);
 
-                    addTeamRow(team, teamsTableBody);
-                });
-            })
-            .catch(error => console.error('Error:', error));
+                        addTeamRow(team, teamsTableBody);
+                    });
+                })
+                .catch(error => console.error('Error:', error));
 
             // Fetch games data
             fetch('http://127.0.0.1:5000/games', {
@@ -294,11 +315,11 @@
                     'Authorization': 'Bearer ' + token
                 }
             })
-            .then(response => response.json())
-            .then(gamesData => {
-                gamesData.forEach(game => addGameRow(game, gamesTableBody));
-            })
-            .catch(error => console.error('Error:', error));
+                .then(response => response.json())
+                .then(gamesData => {
+                    gamesData.forEach(game => addGameRow(game, gamesTableBody));
+                })
+                .catch(error => console.error('Error:', error));
         }
 
         function addGameRow(game, gamesTableBody) {
@@ -306,22 +327,23 @@
             let cellName = row.insertCell(0);
             let cellStatus = row.insertCell(1);
             let cellTeams = row.insertCell(2);
-            let cellDelete = row.insertCell(3);
-            let cellNextRound = row.insertCell(4);
+            let cellActions1 = row.insertCell(3);
 
             cellName.textContent = game.name;
             cellStatus.textContent = game.status;
             cellTeams.textContent = game.teams.map(team => team.name).join(', ');
 
+            // Next Round Button
+            let nextRoundBtn = document.createElement('button');
+            nextRoundBtn.textContent = 'Next Round';
+            nextRoundBtn.onclick = function () { }; // add Funktion for next round
+            cellActions1.appendChild(nextRoundBtn);
+
+            // Delete Button
             let deleteBtn = document.createElement('button');
             deleteBtn.textContent = 'Delete';
             deleteBtn.onclick = function () { deleteGame(game.id); };
-            cellDelete.appendChild(deleteBtn);
-
-            let nextRoundBtn = document.createElement('button');
-            nextRoundBtn.textContent = 'Next Round';
-            nextRoundBtn.onclick = function () {  }; // add Funktion for next round
-            cellNextRound.appendChild(nextRoundBtn);
+            cellActions1.appendChild(deleteBtn);
         }
 
 
@@ -334,23 +356,23 @@
             cellName.textContent = team.name;
             cellGames.textContent = team.games.map(game => game.name).join(', ');
 
-            // Delete Button
-            let deleteBtn = document.createElement('button');
-            deleteBtn.textContent = 'Delete';
-            deleteBtn.onclick = function () { deleteTeam(team.name); };
-            cellActions.appendChild(deleteBtn); // Using cellActions to append deleteBtn
-
             // Change Password Button
             let changePasswordBtn = document.createElement('button');
             changePasswordBtn.textContent = 'Change Password';
             changePasswordBtn.onclick = function () { changeTeamPassword(team.name); };
             cellActions.appendChild(changePasswordBtn); // Using cellActions to append changePasswordBtn
+
+            // Delete Button
+            let deleteBtn = document.createElement('button');
+            deleteBtn.textContent = 'Delete';
+            deleteBtn.onclick = function () { deleteTeam(team.name); };
+            cellActions.appendChild(deleteBtn); // Using cellActions to append deleteBtn
         }
 
 
 
         // Handle New Game Registration Submission
-        document.getElementById('newGameForm').addEventListener('submit', function(e) {
+        document.getElementById('newGameForm').addEventListener('submit', function (e) {
             e.preventDefault();
             const gameName = document.getElementById('newGameName').value;
 
@@ -402,18 +424,18 @@
                 },
                 body: requestData
             })
-            .then(response => {
-                if (response.ok) {
-                    alert('Game Registered Successfully!');
-                    location.reload(); // Reload the page
-                } else {
-                    alert('Failed to register the game');
-                }
-            })
-            .catch((error) => {
-                console.error('Error:', error);
-                alert('Error registering the game');
-            });
+                .then(response => {
+                    if (response.ok) {
+                        alert('Game Registered Successfully!');
+                        location.reload(); // Reload the page
+                    } else {
+                        alert('Failed to register the game');
+                    }
+                })
+                .catch((error) => {
+                    console.error('Error:', error);
+                    alert('Error registering the game');
+                });
         });
 
         // Function to handle game deletion
@@ -466,18 +488,18 @@
                     'Authorization': 'Bearer ' + token
                 }
             })
-            .then(response => {
-                if (response.ok) {
-                    alert('Team deleted successfully');
-                    location.reload(); // Reload the page to update the team list
-                } else {
-                    alert('Failed to delete the team');
-                }
-            })
-            .catch(error => {
-                console.error('Error:', error);
-                alert('Error deleting the team');
-            });
+                .then(response => {
+                    if (response.ok) {
+                        alert('Team deleted successfully');
+                        location.reload(); // Reload the page to update the team list
+                    } else {
+                        alert('Failed to delete the team');
+                    }
+                })
+                .catch(error => {
+                    console.error('Error:', error);
+                    alert('Error deleting the team');
+                });
         }
 
         function changeTeamPassword(teamName) {
@@ -494,20 +516,20 @@
                     },
                     body: JSON.stringify({ password: newPassword })
                 })
-                .then(response => {
-                    if (response.ok) {
-                        return response.json();
-                    } else {
-                        throw new Error('Something went wrong');
-                    }
-                })
-                .then(data => {
-                    alert("Password changed successfully");
-                })
-                .catch((error) => {
-                    console.error('Error:', error);
-                    alert("Failed to change password");
-                });
+                    .then(response => {
+                        if (response.ok) {
+                            return response.json();
+                        } else {
+                            throw new Error('Something went wrong');
+                        }
+                    })
+                    .then(data => {
+                        alert("Password changed successfully");
+                    })
+                    .catch((error) => {
+                        console.error('Error:', error);
+                        alert("Failed to change password");
+                    });
             } else {
                 // User cancelled the prompt or entered an empty value
                 alert("Password change cancelled");
@@ -516,16 +538,17 @@
 
 
         // Fetch and display games on page load
-        document.addEventListener('DOMContentLoaded', function() {
+        document.addEventListener('DOMContentLoaded', function () {
             fetchTeamsAndGames();
         });
 
         // Logout functionality
-        document.getElementById('logoutBtn').addEventListener('click', function() {
+        document.getElementById('logoutBtn').addEventListener('click', function () {
             localStorage.removeItem('access_token');
             window.location.href = 'index.htm'; // Update with your login page URL
         });
 
     </script>
 </body>
+
 </html>
