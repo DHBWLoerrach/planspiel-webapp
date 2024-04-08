@@ -336,7 +336,7 @@
             // Next Round Button
             let nextRoundBtn = document.createElement('button');
             nextRoundBtn.textContent = 'Next Round';
-            nextRoundBtn.onclick = function () { nextRound(); }; // add Funktion for next round
+            nextRoundBtn.onclick = function () { nextRound(game.id); }; // add Funktion for next round
             cellActions1.appendChild(nextRoundBtn);
 
             // Delete Button
@@ -548,7 +548,7 @@
             window.location.href = 'index.htm'; // Update with your login page URL
         });
 
-        function nextRound() {
+        function nextRound(gameId) {
             fetch('http://127.0.0.1:5000/next_round', {
                 method: 'POST',
                 headers: {
@@ -568,7 +568,6 @@
                 alert('Error starting the next round');
             });
         }
-
     </script>
 </body>
 

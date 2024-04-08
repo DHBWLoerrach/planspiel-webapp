@@ -461,17 +461,7 @@ def lock_team():
         print(f"SQLAlchemyError: {e}")  # Log the error
         return jsonify({'error': 'Database update failed'}), 500
 
-@app.route('/unlock-team', methods=['POST'])
-@jwt_required()
-def unlock_team():
-    team_name = request.json.get('team_name')
-    game_id = request.json.get('game_id')
 
-    sql = text("UPDATE gameteams SET locked = 0 WHERE game_id = :game_id AND teams_name = :team_name")
-    with db.engine.connect() as connection:
-        connection.execute(sql, {'game_id': game_id, 'team_name': team_name})
-
-    return jsonify({'message': 'Team unlocked successfully'}), 200
 
 @app.route('/submit-turn', methods=['POST'])
 @jwt_required()
@@ -572,13 +562,25 @@ def submit_turn():
     return jsonify({"message": "Turn submitted successfully"}), 201
 
 @app.route('/next_round', methods=['POST'])
+@jwt_required()
 def next_round():
     game_id = request.json.get('game_id')
     game = Game.query.get_or_404(game_id)
     game.current_period += 1
     db.session.commit()
 
-    localDataProcessor.process_decisions(game_id)
+    stmt = text("UPDATE gameteams SET locked = 0 WHERE game_id = :game_id")
+    try:
+        with db.engine.begin() as connection:
+            connection.execute(stmt, {'game_id': game_id})
+    except Exception as e:
+        # Log the exception and return an error message
+        print(f"Error occurred: {e}")
+        return jsonify({"error": "An error occurred while updating the database"}), 500
+
+
+
+    # localDataProcessor.process_decisions(game_id)
 
     return jsonify({"message": "Next round started successfully"}), 200
 
