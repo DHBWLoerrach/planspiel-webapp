@@ -9,15 +9,17 @@ Dieses Projekt verwandelt ein lokales Unternehmenssimulationsspiel in eine öffe
 Um mit dieser Webanwendung zu starten, folgen Sie diesen Schritten:
 
 1. **GitHub Repository Klonen**:
+
    - Klonen Sie das Repository auf Ihren lokalen Rechner, um Zugriff auf den Quellcode zu erhalten.
-
+   - Alle nötigen Python packages installieren: pip install -r requirements.txt
 2. **Datenbank Einrichten**:
-   - Richten Sie die Datenbank ein, mit der die Anwendung interagieren wird. Stellen Sie sicher, dass sie richtig konfiguriert ist und läuft.
 
+   - Richten Sie die Datenbank ein, mit der die Anwendung interagieren wird. Stellen Sie sicher, dass sie richtig konfiguriert ist und läuft
 3. **Datenbank-URL Konfigurieren**:
-   - Ändern Sie die Datenbank-URL im Code, um die Anwendung mit Ihrer Datenbank zu verbinden.
 
+   - Ändern Sie die Datenbank-URL im Code, um die Anwendung mit Ihrer Datenbank zu verbinden.
 4. **.htm Dateien Öffentlich Zugänglich Machen**:
+
    - Stellen Sie sicher, dass die .htm Dateien öffentlich zugänglich sind, da sie für die Web-Schnittstelle der Anwendung wesentlich sind.
 
 ## Datenbankstruktur
@@ -51,7 +53,5 @@ Die Datenbank besteht aus mehreren Tabellen, die für den Betrieb des Unternehme
 - **`turn_number`** (Integer): Nummer des Zuges.
 - **`submission_time`** (DateTime, Standard=Aktueller Zeitstempel): Zeitpunkt der Einreichung für den Zug.
 - **Preispolitik, Produktpolitik, Marketing, Vertrieb, Marktforschung, Produktionsplan, Materialbeschaffung, Technische Anlagen, Personalwesen, Finanzwesen Felder**: Verschiedene Felder für Spieldaten (Floats, Strings).
-
-
 
 Dieses Projekt ist unter Apache License lizenziert. Bitte sehen Sie die LIZENZDATEI für weitere Details.
