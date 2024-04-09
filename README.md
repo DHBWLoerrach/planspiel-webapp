@@ -22,6 +22,8 @@ Um mit dieser Webanwendung zu starten, folgen Sie diesen Schritten:
 
    - Stellen Sie sicher, dass die .htm Dateien öffentlich zugänglich sind, da sie für die Web-Schnittstelle der Anwendung wesentlich sind.
 
+Weitere Infos finden sich jeweils in den READMEs zum [Frontend](/Frontend) und [Backend](/Backend).
+
 ## Datenbankstruktur
 
 Die Datenbank besteht aus mehreren Tabellen, die für den Betrieb des Unternehmenssimulationsspiels wesentlich sind. Nachfolgend ist die detaillierte Struktur der Haupttabellen aufgeführt:
